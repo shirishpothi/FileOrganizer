@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/.build/arm64-apple-macosx/debug/FileOrganizerTests.build/master.swiftdeps"
+  },
+  "/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/Tests/FileOrganizerTests.swift": {
+    "dependencies": "/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/.build/arm64-apple-macosx/debug/FileOrganizerTests.build/FileOrganizerTests.d",
+    "object": "/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/.build/arm64-apple-macosx/debug/FileOrganizerTests.build/FileOrganizerTests.swift.o",
+    "swiftmodule": "/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/.build/arm64-apple-macosx/debug/FileOrganizerTests.build/FileOrganizerTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/.build/arm64-apple-macosx/debug/FileOrganizerTests.build/FileOrganizerTests.swiftdeps",
+    "diagnostics": "/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/.build/arm64-apple-macosx/debug/FileOrganizerTests.build/FileOrganizerTests.dia"
+  }
+}
