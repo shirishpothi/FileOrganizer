@@ -74,4 +74,15 @@ class DirectoryScannerTests: XCTestCase {
         // Verify hash if possible, or just check it's non-empty
         XCTAssertFalse(files.first?.sha256Hash?.isEmpty ?? true)
     }
+    
+    func testRecursiveScanning() async throws {
+        let subDir = tempDirectory.appendingPathComponent("SubDir")
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        let subFile = subDir.appendingPathComponent("sub.txt")
+        try "sub content".write(to: subFile, atomically: true, encoding: .utf8)
+        
+        let files = try await scanner.scanDirectory(at: tempDirectory)
+        
+        XCTAssertTrue(files.contains(where: { $0.name == "sub" }))
+    }
 }

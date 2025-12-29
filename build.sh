@@ -16,7 +16,10 @@ RESOURCES_DIR="$CONTENTS_DIR/Resources"
 echo "🚀 Building $APP_NAME..."
 
 # 1. Compile the project
-swift build
+if ! swift build; then
+    echo "❌ Error: Build failed!"
+    exit 1
+fi
 
 # 2. Get the binary path
 BIN_PATH=$(swift build --show-bin-path)
@@ -27,17 +30,28 @@ mkdir -p "$MACOS_DIR"
 mkdir -p "$RESOURCES_DIR"
 
 # 4. Copy the fresh binary into the bundle
-cp "$BIN_PATH/$BINARY_NAME" "$MACOS_DIR/"
+if [ -f "$BIN_PATH/$BINARY_NAME" ]; then
+    cp "$BIN_PATH/$BINARY_NAME" "$MACOS_DIR/"
+    echo "✅ Binary copied to $MACOS_DIR"
+else
+    echo "❌ Error: Binary not found at $BIN_PATH/$BINARY_NAME"
+    exit 1
+fi
 
 # 5. Copy Info.plist
 if [ -f "Info.plist" ]; then
     cp "Info.plist" "$CONTENTS_DIR/"
+    echo "📄 Info.plist updated"
 else
-    echo "⚠️  Warning: Info.plist not found in project root"
+    echo "⚠️ Warning: Info.plist not found in project root"
 fi
 
-# 6. Sign the app (Ad-hoc) to prevent launch errors (Code 162)
+# 6. Sign the app (Ad-hoc) to prevent launch errors
 echo "🔏 Signing $APP_BUNDLE..."
-codesign --force --deep --sign - "$APP_BUNDLE"
+if codesign --force --deep --sign - "$APP_BUNDLE"; then
+    echo "✅ Signing successful"
+else
+    echo "⚠️ Warning: Signing failed (this is common on some systems but may cause launch issues)"
+fi
 
-echo "✅ Build complete! Run with: open $APP_BUNDLE"
+echo "✨ Build complete! Run with: make run"
