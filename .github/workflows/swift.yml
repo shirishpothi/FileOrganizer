@@ -19,9 +19,4 @@ jobs:
         xcode-version: '15.4'
 
     - name: Build and Test
-      run: |
-        xcodebuild test \
-          -project FileOrganiser.xcodeproj \
-          -scheme FileOrganizer \
-          -destination 'platform=macOS' \
-          CODE_SIGNING_ALLOWED=NO
+      run: swift test

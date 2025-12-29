@@ -1,3 +1,4 @@
+
 //
 //  AppleFoundationModelClient.swift
 //  FileOrganizer
@@ -7,9 +8,13 @@
 //
 
 import Foundation
+
+// NOTE: This client uses futuristic/private APIs (FoundationModels) that are 
+// currently gated to macOS 26.0 in the SDK. It is disabled for now.
+#if false && canImport(FoundationModels) && os(macOS)
 import FoundationModels
 
-/// Client for Apple's on-device Foundation Models (Apple Intelligence)
+@available(macOS 15.0, *)
 final class AppleFoundationModelClient: AIClientProtocol, @unchecked Sendable {
     let config: AIConfig
     
@@ -93,4 +98,4 @@ extension AIClientError {
         )
     }
 }
-
+#endif

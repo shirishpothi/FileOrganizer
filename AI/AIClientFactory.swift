@@ -14,11 +14,14 @@ struct AIClientFactory {
             return OpenAIClient(config: config)
             
         case .appleFoundationModel:
-            if AppleFoundationModelClient.isAvailable() {
-                return AppleFoundationModelClient(config: config)
-            } else {
-                throw AIClientError.appleIntelligenceUnavailable
+            #if canImport(FoundationModels) && os(macOS) && false
+            if #available(macOS 15.0, *) {
+                if AppleFoundationModelClient.isAvailable() {
+                    return AppleFoundationModelClient(config: config)
+                }
             }
+            #endif
+            throw AIClientError.apiError(statusCode: 501, message: "Apple Intelligence is not supported on this version of macOS.")
         }
     }
 }
