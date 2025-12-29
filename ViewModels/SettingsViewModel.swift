@@ -17,6 +17,7 @@ public class SettingsViewModel: ObservableObject {
     }
     
     @Published public var isAppleIntelligenceAvailable: Bool = false
+    @Published public var appleIntelligenceStatus: String = ""
     
     private let userDefaults = UserDefaults.standard
     private let configKey = "aiConfig"
@@ -41,52 +42,55 @@ public class SettingsViewModel: ObservableObject {
             // Load API key from Keychain (preferred source)
             if let apiKey = KeychainManager.get(key: "apiKey") {
                 decoded.apiKey = apiKey
-            } else {
             }
             config = decoded
         }
     }
     
     private func saveConfig() {
-        // #region agent log
-        DebugLogger.log(hypothesisId: "B", location: "SettingsViewModel.swift:36", message: "saveConfig called - API key being saved to Keychain", data: [
-            "hasAPIKey": config.apiKey != nil,
-            "apiKeyLength": config.apiKey?.count ?? 0,
-            "provider": config.provider.rawValue
+        // Capture values for thread-safe access
+        let apiKey = config.apiKey
+        let provider = config.provider.rawValue
+        var configToSave = config
+        configToSave.apiKey = nil // Don't store in UserDefaults
+        let configData = try? JSONEncoder().encode(configToSave)
+        
+        DebugLogger.log(hypothesisId: "B", location: "SettingsViewModel", message: "Saving config", data: [
+            "hasAPIKey": apiKey != nil,
+            "provider": provider
         ])
-        // #endregion
         
         // Save API key to Keychain securely
-        if let apiKey = config.apiKey {
+        if let apiKey = apiKey {
             _ = KeychainManager.save(key: "apiKey", value: apiKey)
         } else {
             _ = KeychainManager.delete(key: "apiKey")
         }
         
-        // Save config without API key to UserDefaults
-        var configToSave = config
-        configToSave.apiKey = nil // Don't store in UserDefaults
-        if let encoded = try? JSONEncoder().encode(configToSave) {
+        // Save config to UserDefaults
+        if let encoded = configData {
             userDefaults.set(encoded, forKey: configKey)
         }
     }
     
     private func checkAppleIntelligenceAvailability() {
-        if #available(macOS 15.0, *) {
-            isAppleIntelligenceAvailable = AppleFoundationModelClient.isAvailable()
-        } else {
-            isAppleIntelligenceAvailable = false
-        }
+        isAppleIntelligenceAvailable = AppleFoundationModelClient.isAvailable()
+        appleIntelligenceStatus = AppleFoundationModelClient.unavailabilityReason
+    }
+    
+    public func refreshAppleIntelligenceStatus() {
+        checkAppleIntelligenceAvailability()
     }
     
     public func testConnection() async throws {
-        let client = try AIClientFactory.createClient(config: config)
+        let clientConfig = config
+        let client = try AIClientFactory.createClient(config: clientConfig)
         // Test with a minimal file list
         let testFiles = [
             FileItem(path: "/test/file1.txt", name: "file1", extension: "txt"),
             FileItem(path: "/test/file2.pdf", name: "file2", extension: "pdf")
         ]
-        _ = try await client.analyze(files: testFiles)
+        _ = try await client.analyze(files: testFiles, customInstructions: nil, personaPrompt: nil, temperature: clientConfig.temperature)
     }
 }
 

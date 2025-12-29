@@ -2,98 +2,95 @@
 //  AppleFoundationModelClient.swift
 //  FileOrganizer
 //
-//  Apple Foundation Models Integration
-//  Documentation: https://developer.apple.com/documentation/foundationmodels
+//  Apple Foundation Models Integration for macOS 26+
+//  Uses on-device Apple Intelligence for file organization
 //
 
 import Foundation
-
-#if canImport(FoundationModels)
 import FoundationModels
-#endif
 
-@available(macOS 15.0, *)
-class AppleFoundationModelClient: AIClientProtocol {
+/// Client for Apple's on-device Foundation Models (Apple Intelligence)
+final class AppleFoundationModelClient: AIClientProtocol, @unchecked Sendable {
     let config: AIConfig
-    private var session: Any? // FoundationModels.Session when available
     
     init(config: AIConfig) {
         self.config = config
     }
     
-    func analyze(files: [FileItem]) async throws -> OrganizationPlan {
-        // Check if Foundation Models framework is available
-        #if canImport(FoundationModels)
-        return try await analyzeWithFoundationModels(files: files)
-        #else
-        // Fallback if framework not available
-        throw AIClientError.appleIntelligenceUnavailable
-        #endif
-    }
-    
-    #if canImport(FoundationModels)
-    @available(macOS 15.0, *)
-    private func analyzeWithFoundationModels(files: [FileItem]) async throws -> OrganizationPlan {
-        _ = PromptBuilder.buildSystemPrompt()
-        _ = PromptBuilder.buildAnalysisPrompt(files: files)
+    func analyze(files: [FileItem], customInstructions: String? = nil, personaPrompt: String? = nil, temperature: Double? = nil) async throws -> OrganizationPlan {
+        // Verify availability first
+        guard Self.isAvailable() else {
+            throw AIClientError.apiError(statusCode: 503, message: Self.unavailabilityReason)
+        }
         
-        // Create a session with the Foundation Models framework
-        // Note: Actual API may vary - refer to Apple's documentation
-        // This is a structure based on typical Apple API patterns
+        // Use compact prompts for Apple Intelligence
+        let systemPrompt = config.systemPromptOverride ?? PromptBuilder.buildCompactSystemPrompt(enableReasoning: config.enableReasoning)
+        
+        // Incorporate custom instructions
+        var userPrompt = PromptBuilder.buildCompactPrompt(files: files, enableReasoning: config.enableReasoning)
+        if let instructions = customInstructions, !instructions.isEmpty {
+            userPrompt = "USER INSTRUCTIONS: \(instructions)\n\n" + userPrompt
+        }
         
         do {
-            // Example implementation structure:
-            // 1. Create or get a model session
-            // 2. Configure with system prompt and user prompt
-            // 3. Use guided generation to ensure JSON format
-            // 4. Get the response
+            // Create a language model session with the system instructions
+            let session = LanguageModelSession(instructions: systemPrompt)
             
-            /*
-            // Pseudo-code based on Foundation Models API:
-            let model = try await FoundationModels.Model.default()
-            let session = try await model.createSession()
+            // Generate response from the model
+            let response = try await session.respond(to: userPrompt)
+            let content = response.content
             
-            // Configure for JSON output using guided generation
-            let response = try await session.generate(
-                prompt: userPrompt,
-                systemPrompt: systemPrompt,
-                options: [
-                    .responseFormat(.json),
-                    .temperature(config.temperature)
-                ]
+            // Parse the response into an OrganizationPlan
+            return try ResponseParser.parseResponse(content, originalFiles: files)
+            
+        } catch let error as LanguageModelSession.GenerationError {
+            throw AIClientError.apiError(
+                statusCode: 500,
+                message: "Apple Intelligence generation error: \(error.localizedDescription)"
             )
-            
-            return try ResponseParser.parseResponse(response.content, originalFiles: files)
-            */
-            
-            // Temporary: For now, throw unavailable until framework is fully integrated
-            // Remove this when actual API is implemented
-            throw AIClientError.appleIntelligenceUnavailable
-            
+        } catch let error as AIClientError {
+            throw error
         } catch {
             throw AIClientError.networkError(error)
         }
     }
-    #endif
     
+    /// Check if Apple Intelligence is available on this device
     static func isAvailable() -> Bool {
-        #if canImport(FoundationModels)
-        if #available(macOS 15.0, *) {
-            // Check if Apple Intelligence is available on this system
-            // The Foundation Models framework should provide availability checking
-            // For now, return true if framework can be imported
-            // In production, use actual availability API from FoundationModels
+        let model = SystemLanguageModel.default
+        if case .available = model.availability {
             return true
         }
-        #endif
         return false
+    }
+    
+    /// Get a user-friendly explanation of why Apple Intelligence is unavailable
+    static var unavailabilityReason: String {
+        let model = SystemLanguageModel.default
+        switch model.availability {
+        case .available:
+            return "Apple Intelligence is available."
+        case .unavailable(let reason):
+            switch reason {
+            case .deviceNotEligible:
+                return "This device is not eligible for Apple Intelligence. Requires Apple Silicon Mac with macOS 26 or later."
+            case .appleIntelligenceNotEnabled:
+                return "Apple Intelligence is not enabled. Enable it in System Settings > Apple Intelligence & Siri."
+            case .modelNotReady:
+                return "Apple Intelligence model is not ready. It may still be downloading. Please wait and try again."
+            @unknown default:
+                return "Apple Intelligence is unavailable for an unknown reason."
+            }
+        }
     }
 }
 
 extension AIClientError {
-    static let appleIntelligenceUnavailable = AIClientError.apiError(
-        statusCode: 503,
-        message: "Apple Intelligence is not available on this system"
-    )
+    static var appleIntelligenceUnavailable: AIClientError {
+        return AIClientError.apiError(
+            statusCode: 503,
+            message: AppleFoundationModelClient.unavailabilityReason
+        )
+    }
 }
 

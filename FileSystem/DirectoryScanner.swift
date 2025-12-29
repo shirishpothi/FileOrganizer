@@ -6,12 +6,20 @@
 //
 
 import Foundation
+import CryptoKit
 
 actor DirectoryScanner {
     private var isScanning = false
     private var scannedCount = 0
+    private let contentAnalyzer = ContentAnalyzer()
     
-    func scanDirectory(at url: URL, includeHidden: Bool = false) async throws -> [FileItem] {
+    /// Scan directory with optional deep content analysis and hash computation
+    func scanDirectory(
+        at url: URL,
+        includeHidden: Bool = false,
+        deepScan: Bool = false,
+        computeHashes: Bool = false
+    ) async throws -> [FileItem] {
         guard !isScanning else {
             throw ScannerError.alreadyScanning
         }
@@ -35,6 +43,8 @@ actor DirectoryScanner {
             at: url,
             fileManager: fileManager,
             includeHidden: includeHidden,
+            deepScan: deepScan,
+            computeHashes: computeHashes,
             files: &files
         )
         
@@ -45,6 +55,8 @@ actor DirectoryScanner {
         at url: URL,
         fileManager: FileManager,
         includeHidden: Bool,
+        deepScan: Bool,
+        computeHashes: Bool,
         files: inout [FileItem]
     ) async throws {
         let resourceKeys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey, .creationDateKey, .isHiddenKey]
@@ -80,23 +92,47 @@ actor DirectoryScanner {
             let pathExtension = fileURL.pathExtension
             let fileName = fileURL.deletingPathExtension().lastPathComponent
             
+            // Deep scan: extract content metadata
+            var contentMetadata: ContentMetadata? = nil
+            if deepScan {
+                contentMetadata = await contentAnalyzer.analyze(fileURL: fileURL)
+            }
+            
+            // Hash computation for duplicate detection
+            var sha256Hash: String? = nil
+            if computeHashes {
+                sha256Hash = computeSHA256(for: fileURL)
+            }
+            
             let fileItem = FileItem(
                 path: fileURL.path,
                 name: fileName,
                 extension: pathExtension,
                 size: Int64(size),
                 isDirectory: false,
-                creationDate: creationDate
+                creationDate: creationDate,
+                contentMetadata: contentMetadata,
+                sha256Hash: sha256Hash
             )
             
             files.append(fileItem)
             scannedCount += 1
             
             // Yield to allow UI updates
-            if scannedCount % 100 == 0 {
+            if scannedCount % 50 == 0 {
                 await Task.yield()
             }
         }
+    }
+    
+    /// Compute SHA-256 hash for duplicate detection
+    private func computeSHA256(for url: URL) -> String? {
+        guard let data = try? Data(contentsOf: url) else {
+            return nil
+        }
+        
+        let digest = SHA256.hash(data: data)
+        return digest.compactMap { String(format: "%02x", $0) }.joined()
     }
     
     func getProgress() -> Int {

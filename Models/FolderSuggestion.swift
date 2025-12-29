@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FolderSuggestion: Codable, Identifiable, Hashable {
+public struct FolderSuggestion: Codable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public var folderName: String
     public var description: String

@@ -8,14 +8,14 @@
 import Foundation
 import SwiftUI
 
+@MainActor
 public class ExtensionListener: ObservableObject {
     @Published public var incomingURL: URL?
     
     public init() {
-        ExtensionCommunication.setupNotificationObserver { [weak self] url in
-            DispatchQueue.main.async {
-                self?.incomingURL = url
-            }
+        ExtensionCommunication.setupNotificationObserver { @MainActor [weak self] url in
+            self?.incomingURL = url
         }
     }
 }
+

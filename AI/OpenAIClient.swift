@@ -2,29 +2,39 @@
 //  OpenAIClient.swift
 //  FileOrganizer
 //
-//  OpenAI-Compatible API Client
+//  OpenAI-Compatible API Client with Streaming Support
 //
 
 import Foundation
 
-class OpenAIClient: AIClientProtocol {
+/// Delegate protocol for streaming updates
+@MainActor
+protocol StreamingDelegate: AnyObject {
+    func didReceiveChunk(_ chunk: String)
+    func didComplete(content: String)
+    func didFail(error: Error)
+}
+
+final class OpenAIClient: AIClientProtocol, @unchecked Sendable {
     let config: AIConfig
     private let session: URLSession
+    @MainActor weak var streamingDelegate: StreamingDelegate?
     
     init(config: AIConfig) {
         self.config = config
         let sessionConfig = URLSessionConfiguration.default
-        sessionConfig.timeoutIntervalForRequest = 60
-        sessionConfig.timeoutIntervalForResource = 300
+        sessionConfig.timeoutIntervalForRequest = config.requestTimeout
+        sessionConfig.timeoutIntervalForResource = config.resourceTimeout
         self.session = URLSession(configuration: sessionConfig)
     }
     
-    func analyze(files: [FileItem]) async throws -> OrganizationPlan {
+    func analyze(files: [FileItem], customInstructions: String? = nil, personaPrompt: String? = nil, temperature: Double? = nil) async throws -> OrganizationPlan {
         guard let apiURL = config.apiURL else {
             throw AIClientError.missingAPIURL
         }
         
-        guard let apiKey = config.apiKey else {
+        // API key is now optional - only required if config.requiresAPIKey is true
+        if config.requiresAPIKey && (config.apiKey == nil || config.apiKey?.isEmpty == true) {
             throw AIClientError.missingAPIKey
         }
         
@@ -33,22 +43,50 @@ class OpenAIClient: AIClientProtocol {
             throw AIClientError.invalidURL
         }
         
-        let systemPrompt = PromptBuilder.buildSystemPrompt()
-        let userPrompt = PromptBuilder.buildAnalysisPrompt(files: files)
+        // Use custom system prompt if provided, otherwise use default
+        let systemPrompt = config.systemPromptOverride ?? PromptBuilder.buildSystemPrompt(personaInfo: personaPrompt ?? "")
+        let userPrompt = PromptBuilder.buildOrganizationPrompt(
+            files: files, 
+            enableReasoning: config.enableReasoning, 
+            includeContentMetadata: true,
+            customInstructions: customInstructions
+        )
         
-        let requestBody: [String: Any] = [
+        // Build request body
+        var requestBody: [String: Any] = [
             "model": config.model,
             "messages": [
                 ["role": "system", "content": systemPrompt],
                 ["role": "user", "content": userPrompt]
             ],
-            "temperature": config.temperature,
+            "temperature": temperature ?? config.temperature,
             "response_format": ["type": "json_object"]
         ]
         
+        // Add max_tokens if specified
+        if let maxTokens = config.maxTokens {
+            requestBody["max_tokens"] = maxTokens
+        }
+        
+        // Use streaming if enabled
+        if config.enableStreaming {
+            return try await analyzeWithStreaming(url: url, requestBody: requestBody, files: files)
+        } else {
+            return try await analyzeNonStreaming(url: url, requestBody: requestBody, files: files)
+        }
+    }
+    
+    // MARK: - Non-Streaming Implementation
+    
+    private func analyzeNonStreaming(url: URL, requestBody: [String: Any], files: [FileItem]) async throws -> OrganizationPlan {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        // Only add Authorization header if API key is provided
+        if let apiKey = config.apiKey, !apiKey.isEmpty {
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        }
+        
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         
@@ -79,9 +117,96 @@ class OpenAIClient: AIClientProtocol {
             throw AIClientError.networkError(error)
         }
     }
+    
+    // MARK: - Streaming Implementation
+    
+    private func analyzeWithStreaming(url: URL, requestBody: [String: Any], files: [FileItem]) async throws -> OrganizationPlan {
+        var streamingRequestBody = requestBody
+        streamingRequestBody["stream"] = true
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        // Only add Authorization header if API key is provided
+        if let apiKey = config.apiKey, !apiKey.isEmpty {
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        }
+        
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: streamingRequestBody)
+        
+        var accumulatedContent = ""
+        
+        do {
+            let (bytes, response) = try await session.bytes(for: request)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AIClientError.invalidResponse
+            }
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                // For streaming errors, we need to collect the error message
+                var errorData = Data()
+                for try await byte in bytes {
+                    errorData.append(byte)
+                }
+                let errorMessage = String(data: errorData, encoding: .utf8) ?? "Unknown error"
+                throw AIClientError.apiError(statusCode: httpResponse.statusCode, message: errorMessage)
+            }
+            
+            // Process SSE stream
+            for try await line in bytes.lines {
+                if line.hasPrefix("data: ") {
+                    let jsonString = String(line.dropFirst(6))
+                    
+                    // Check for stream end
+                    if jsonString.trimmingCharacters(in: .whitespaces) == "[DONE]" {
+                        break
+                    }
+                    
+                    // Parse the JSON chunk
+                    if let jsonData = jsonString.data(using: .utf8),
+                       let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+                       let choices = json["choices"] as? [[String: Any]],
+                       let firstChoice = choices.first,
+                       let delta = firstChoice["delta"] as? [String: Any],
+                       let content = delta["content"] as? String {
+                        
+                        accumulatedContent += content
+                        
+                        // Notify delegate about the new chunk
+                        let chunk = content
+                        await MainActor.run {
+                            streamingDelegate?.didReceiveChunk(chunk)
+                        }
+                    }
+                }
+            }
+            
+            // Notify completion
+            let finalContent = accumulatedContent
+            await MainActor.run {
+                streamingDelegate?.didComplete(content: finalContent)
+            }
+            
+            return try ResponseParser.parseResponse(accumulatedContent, originalFiles: files)
+            
+        } catch let error as AIClientError {
+            await MainActor.run {
+                streamingDelegate?.didFail(error: error)
+            }
+            throw error
+        } catch {
+            let clientError = AIClientError.networkError(error)
+            await MainActor.run {
+                streamingDelegate?.didFail(error: clientError)
+            }
+            throw clientError
+        }
+    }
 }
 
-enum AIClientError: LocalizedError {
+enum AIClientError: LocalizedError, Sendable {
     case missingAPIURL
     case missingAPIKey
     case invalidURL
@@ -95,7 +220,7 @@ enum AIClientError: LocalizedError {
         case .missingAPIURL:
             return "API URL is required"
         case .missingAPIKey:
-            return "API key is required"
+            return "API key is required. Disable 'Requires API Key' in Advanced Settings if your endpoint doesn't require authentication."
         case .invalidURL:
             return "Invalid API URL"
         case .invalidResponse:

@@ -2,55 +2,96 @@
 //  ContentView.swift
 //  FileOrganizer
 //
-//  Main container view
+//  Main container view with full-width layout
 //
 
 import SwiftUI
 
 public struct ContentView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-    @StateObject private var organizer = FolderOrganizer()
-    @StateObject private var exclusionRules = ExclusionRulesManager()
-    @StateObject private var extensionListener = ExtensionListener()
-    @State private var selectedTab = 0
+    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var organizer: FolderOrganizer
+    @EnvironmentObject var exclusionRules: ExclusionRulesManager
+    @EnvironmentObject var extensionListener: ExtensionListener
     
     public init() {}
     
     public var body: some View {
-        TabView(selection: $selectedTab) {
-            SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
+        NavigationSplitView(columnVisibility: Binding(
+            get: { appState.showingSidebar ? .all : .detailOnly },
+            set: { appState.showingSidebar = $0 != .detailOnly }
+        )) {
+            // Sidebar
+            List(selection: Binding(
+                get: { appState.currentView },
+                set: { appState.currentView = $0 ?? .organize }
+            )) {
+                Section("Main") {
+                    NavigationLink(value: AppState.AppView.organize) {
+                        Label("Organize", systemImage: "folder.badge.gearshape")
+                    }
+                    .accessibilityIdentifier("OrganizeSidebarItem")
                 }
-                .tag(0)
-            
-            OrganizeView()
-                .environmentObject(organizer)
-                .tabItem {
-                    Label("Organize", systemImage: "folder")
+                
+                Section("Options") {
+                    NavigationLink(value: AppState.AppView.settings) {
+                        Label("Settings", systemImage: "gear")
+                    }
+                    .accessibilityIdentifier("SettingsSidebarItem")
+                    
+                    NavigationLink(value: AppState.AppView.history) {
+                        Label("History", systemImage: "clock")
+                    }
+                    .accessibilityIdentifier("HistorySidebarItem")
                 }
-                .tag(1)
-            
-            HistoryView()
-                .tabItem {
-                    Label("History", systemImage: "clock")
+            }
+            .navigationTitle("FileOrganizer")
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 300)
+        } detail: {
+            // Main content area - uses full width
+            Group {
+                switch appState.currentView {
+                case .organize:
+                    OrganizeView()
+                case .settings:
+                    SettingsView()
+                case .history:
+                    HistoryView()
                 }
-                .tag(2)
+            }
         }
-        .frame(minWidth: 900, minHeight: 700)
-        .onAppear {
-            organizer.exclusionRules = exclusionRules
-            // Check for pending directory from extension
-            if ExtensionCommunication.receiveFromExtension() != nil {
-                selectedTab = 1
+        .navigationSplitViewStyle(.balanced)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Main Navigation")
+        .frame(minWidth: 1000, minHeight: 700)
+        .onChange(of: appState.showDirectoryPicker) { oldValue, showPicker in
+            if showPicker {
+                openDirectoryPicker()
             }
         }
         .onReceive(extensionListener.$incomingURL) { url in
-            if url != nil {
-                self.selectedTab = 1
+            if let url = url {
+                appState.selectedDirectory = url
+                appState.currentView = .organize
                 extensionListener.incomingURL = nil
             }
         }
+    }
+    
+    private func openDirectoryPicker() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.message = "Select a directory to organize"
+        panel.prompt = "Select"
+        
+        if panel.runModal() == .OK, let url = panel.url {
+            appState.selectedDirectory = url
+        }
+        
+        appState.showDirectoryPicker = false
     }
 }
 

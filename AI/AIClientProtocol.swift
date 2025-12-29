@@ -7,8 +7,8 @@
 
 import Foundation
 
-protocol AIClientProtocol {
-    func analyze(files: [FileItem]) async throws -> OrganizationPlan
+protocol AIClientProtocol: Sendable {
+    func analyze(files: [FileItem], customInstructions: String?, personaPrompt: String?, temperature: Double?) async throws -> OrganizationPlan
     var config: AIConfig { get }
 }
 

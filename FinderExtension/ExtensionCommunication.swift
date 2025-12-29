@@ -38,7 +38,7 @@ public struct ExtensionCommunication {
         return nil
     }
     
-    public static func setupNotificationObserver(handler: @escaping (URL) -> Void) {
+    public static func setupNotificationObserver(handler: @escaping @Sendable @MainActor (URL) -> Void) {
         let notificationCenter = DistributedNotificationCenter.default()
         notificationCenter.addObserver(
             forName: notificationName,
@@ -47,7 +47,10 @@ public struct ExtensionCommunication {
         ) { notification in
             if let userInfo = notification.userInfo,
                let path = userInfo["path"] as? String {
-                handler(URL(fileURLWithPath: path))
+                let url = URL(fileURLWithPath: path)
+                Task { @MainActor in
+                    handler(url)
+                }
             }
         }
     }

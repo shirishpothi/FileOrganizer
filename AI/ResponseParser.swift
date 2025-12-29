@@ -10,18 +10,19 @@ import Foundation
 struct ResponseParser {
     struct AIResponse: Codable {
         let folders: [FolderResponse]
-        let unorganized: [UnorganizedFile]?
+        let unorganized: [UnorganizedFileResponse]?
         let notes: String?
     }
     
     struct FolderResponse: Codable {
         let name: String
         let description: String?
+        let reasoning: String?
         let subfolders: [FolderResponse]?
         let files: [String]
     }
     
-    struct UnorganizedFile: Codable {
+    struct UnorganizedFileResponse: Codable {
         let filename: String
         let reason: String
     }
@@ -52,13 +53,18 @@ struct ResponseParser {
             convertFolderResponse(folder, originalFiles: originalFiles)
         }
         
-        let unorganizedFiles = (response.unorganized ?? []).compactMap { unorg -> FileItem? in
-            originalFiles.first { $0.displayName == unorg.filename }
+        let unorganizedDetails = (response.unorganized ?? []).map { unorg in
+            UnorganizedFile(filename: unorg.filename, reason: unorg.reason)
+        }
+        
+        let unorganizedFiles = unorganizedDetails.compactMap { detail -> FileItem? in
+            originalFiles.first { $0.displayName == detail.filename }
         }
         
         return OrganizationPlan(
             suggestions: suggestions,
             unorganizedFiles: unorganizedFiles,
+            unorganizedDetails: unorganizedDetails,
             notes: response.notes ?? "",
             timestamp: Date(),
             version: 1
@@ -79,7 +85,7 @@ struct ResponseParser {
             description: folder.description ?? "",
             files: files,
             subfolders: subfolders,
-            reasoning: folder.description ?? ""
+            reasoning: folder.reasoning ?? folder.description ?? ""
         )
     }
     
@@ -125,4 +131,3 @@ enum ParserError: LocalizedError {
         }
     }
 }
-

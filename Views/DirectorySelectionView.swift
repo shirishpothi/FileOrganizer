@@ -31,12 +31,16 @@ struct DirectorySelectionView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .accessibilityLabel("Browse for Folder")
+            .accessibilityHint("Opens a file picker to select a directory")
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(isTargeted ? Color.blue.opacity(0.1) : Color.clear)
         )
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Directory Selection Area")
+        .accessibilityHint("Drag and drop a folder here or use the Browse button")
         .onDrop(of: [.fileURL], isTargeted: $isTargeted) { providers in
             handleDrop(providers: providers)
         }

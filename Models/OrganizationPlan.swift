@@ -7,10 +7,17 @@
 
 import Foundation
 
-public struct OrganizationPlan: Codable, Identifiable {
+public struct UnorganizedFile: Codable, Hashable, Sendable, Identifiable {
+    public var id: String { filename }
+    public let filename: String
+    public let reason: String
+}
+
+public struct OrganizationPlan: Codable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public var suggestions: [FolderSuggestion]
-    public var unorganizedFiles: [FileItem]
+    public var unorganizedFiles: [FileItem] // Keep for backward compatibility/UI logic
+    public var unorganizedDetails: [UnorganizedFile]
     public var notes: String
     public var timestamp: Date
     public var version: Int
@@ -19,6 +26,7 @@ public struct OrganizationPlan: Codable, Identifiable {
         id: UUID = UUID(),
         suggestions: [FolderSuggestion] = [],
         unorganizedFiles: [FileItem] = [],
+        unorganizedDetails: [UnorganizedFile] = [],
         notes: String = "",
         timestamp: Date = Date(),
         version: Int = 1
@@ -26,6 +34,7 @@ public struct OrganizationPlan: Codable, Identifiable {
         self.id = id
         self.suggestions = suggestions
         self.unorganizedFiles = unorganizedFiles
+        self.unorganizedDetails = unorganizedDetails
         self.notes = notes
         self.timestamp = timestamp
         self.version = version
@@ -42,4 +51,3 @@ public struct OrganizationPlan: Codable, Identifiable {
         return countFolders(suggestions)
     }
 }
-

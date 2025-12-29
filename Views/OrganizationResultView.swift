@@ -2,39 +2,120 @@
 //  OrganizationResultView.swift
 //  FileOrganizer
 //
-//  Post-organization feedback view
+//  Post-organization feedback view with undo and redo support
 //
 
 import SwiftUI
 
 struct OrganizationResultView: View {
     @EnvironmentObject var organizer: FolderOrganizer
+    @State private var isProcessing = false
+    @State private var processError: String?
+    @State private var hasUndone = false
     
     var body: some View {
         VStack(spacing: 30) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 60))
-                .foregroundColor(.green)
+            Image(systemName: hasUndone ? "arrow.uturn.backward.circle.fill" : "checkmark.circle.fill")
+                .font(.system(size: 80))
+                .foregroundColor(hasUndone ? .orange : .green)
+                .symbolEffect(.bounce, value: organizer.state)
             
-            Text("Organization Complete!")
-                .font(.title)
-                .fontWeight(.bold)
-            
-            if let plan = organizer.currentPlan {
-                VStack(spacing: 10) {
-                    Text("\(plan.totalFiles) files organized")
-                    Text("\(plan.totalFolders) folders created")
+            VStack(spacing: 8) {
+                Text(hasUndone ? "Organization Reverted" : "Organization Complete!")
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                if let plan = organizer.currentPlan {
+                    Text("\(plan.totalFiles) files • \(plan.totalFolders) folders")
+                        .font(.body)
+                        .foregroundColor(.secondary)
                 }
-                .font(.body)
-                .foregroundColor(.secondary)
             }
             
-            Button("Organize Another Folder") {
-                organizer.reset()
+            if let error = processError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(8)
             }
-            .buttonStyle(.borderedProminent)
+            
+            HStack(spacing: 16) {
+                if !hasUndone {
+                    Button(action: handleUndo) {
+                        HStack {
+                            if isProcessing {
+                                ProgressView().controlSize(.small).scaleEffect(0.6)
+                            } else {
+                                Image(systemName: "arrow.uturn.backward")
+                            }
+                            Text("Undo Changes")
+                        }
+                        .frame(minWidth: 120)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(isProcessing)
+                } else {
+                    Button(action: handleRedo) {
+                        HStack {
+                            if isProcessing {
+                                ProgressView().controlSize(.small).scaleEffect(0.6)
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            Text("Redo Changes")
+                        }
+                        .frame(minWidth: 120)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(isProcessing)
+                }
+                
+                Button("Done") {
+                    organizer.reset()
+                }
+                .buttonStyle(.borderedProminent)
+                .frame(minWidth: 120)
+                .disabled(isProcessing)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(40)
+    }
+    
+    private func handleUndo() {
+        guard let latestEntry = organizer.history.entries.first, latestEntry.success else { return }
+        
+        isProcessing = true
+        processError = nil
+        
+        Task {
+            do {
+                try await organizer.undoHistoryEntry(latestEntry)
+                hasUndone = true
+                isProcessing = false
+            } catch {
+                processError = "Undo failed: \(error.localizedDescription)"
+                isProcessing = false
+            }
+        }
+    }
+    
+    private func handleRedo() {
+        guard let latestEntry = organizer.history.entries.first, latestEntry.isUndone else { return }
+        
+        isProcessing = true
+        processError = nil
+        
+        Task {
+            do {
+                try await organizer.redoOrganization(from: latestEntry)
+                hasUndone = false
+                isProcessing = false
+            } catch {
+                processError = "Redo failed: \(error.localizedDescription)"
+                isProcessing = false
+            }
+        }
     }
 }
-

@@ -10,6 +10,11 @@ import Foundation
 struct DebugLogger {
     private static let logPath = "/Users/shirishpothi/Downloads/File Organiser/.cursor/debug.log"
     
+    /// Simple log convenience method
+    static func log(_ message: String) {
+        log(sessionId: "default", runId: "run1", hypothesisId: "general", location: "app", message: message, data: [:])
+    }
+    
     static func log(sessionId: String = "debug-session", runId: String = "run1", hypothesisId: String, location: String, message: String, data: [String: Any] = [:]) {
         let logEntry: [String: Any] = [
             "sessionId": sessionId,

@@ -2,20 +2,32 @@
 //  OrganizationHistory.swift
 //  FileOrganizer
 //
-//  Organization history and analytics
+//  Organization history and analytics with undo support
 //
 
 import Foundation
 
-public struct OrganizationHistoryEntry: Codable, Identifiable {
+public enum OrganizationStatus: String, Codable, Sendable {
+    case completed
+    case failed
+    case cancelled
+    case skipped // Superseded by "Try Another"
+    case undo // Reverted
+}
+
+public struct OrganizationHistoryEntry: Codable, Identifiable, Hashable, Sendable {
     public let id: UUID
     public let timestamp: Date
     public let directoryPath: String
     public let filesOrganized: Int
     public let foldersCreated: Int
-    public let plan: OrganizationPlan
-    public let success: Bool
+    public let plan: OrganizationPlan?
+    public let success: Bool // Legacy format, kept for decoding old entries
+    public var status: OrganizationStatus // New detailed status
     public let errorMessage: String?
+    public let rawAIResponse: String?
+    public var operations: [FileSystemManager.FileOperation]?
+    public var isUndone: Bool
     
     public init(
         id: UUID = UUID(),
@@ -23,9 +35,13 @@ public struct OrganizationHistoryEntry: Codable, Identifiable {
         directoryPath: String,
         filesOrganized: Int,
         foldersCreated: Int,
-        plan: OrganizationPlan,
+        plan: OrganizationPlan? = nil,
         success: Bool = true,
-        errorMessage: String? = nil
+        status: OrganizationStatus? = nil,
+        errorMessage: String? = nil,
+        rawAIResponse: String? = nil,
+        operations: [FileSystemManager.FileOperation]? = nil,
+        isUndone: Bool = false
     ) {
         self.id = id
         self.timestamp = timestamp
@@ -34,7 +50,58 @@ public struct OrganizationHistoryEntry: Codable, Identifiable {
         self.foldersCreated = foldersCreated
         self.plan = plan
         self.success = success
+        
+        // Migrate legacy success boolean to status if status not provided
+        if let providedStatus = status {
+            self.status = providedStatus
+        } else {
+            if isUndone {
+                 self.status = .undo
+            } else if success {
+                self.status = .completed
+            } else {
+                self.status = .failed
+            }
+        }
+        
         self.errorMessage = errorMessage
+        self.rawAIResponse = rawAIResponse
+        self.operations = operations
+        self.isUndone = isUndone
+    }
+    
+    // Custom decoding to handle migration from old format
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+        directoryPath = try container.decode(String.self, forKey: .directoryPath)
+        filesOrganized = try container.decode(Int.self, forKey: .filesOrganized)
+        foldersCreated = try container.decode(Int.self, forKey: .foldersCreated)
+        plan = try container.decodeIfPresent(OrganizationPlan.self, forKey: .plan)
+        
+        // Handle legacy 'success'
+        let successVal = try container.decodeIfPresent(Bool.self, forKey: .success) ?? true
+        success = successVal
+        
+        errorMessage = try container.decodeIfPresent(String.self, forKey: .errorMessage)
+        rawAIResponse = try container.decodeIfPresent(String.self, forKey: .rawAIResponse)
+        operations = try container.decodeIfPresent([FileSystemManager.FileOperation].self, forKey: .operations)
+        isUndone = try container.decodeIfPresent(Bool.self, forKey: .isUndone) ?? false
+        
+        // Decode status if present, otherwise infer
+        if let decodedStatus = try container.decodeIfPresent(OrganizationStatus.self, forKey: .status) {
+            status = decodedStatus
+        } else {
+            // Infer
+            if isUndone {
+                status = .undo
+            } else if successVal {
+                status = .completed
+            } else {
+                status = .failed
+            }
+        }
     }
 }
 
@@ -57,23 +124,43 @@ public class OrganizationHistory: ObservableObject {
         saveHistory()
     }
     
+    public func updateEntry(_ entry: OrganizationHistoryEntry) {
+        if let index = entries.firstIndex(where: { $0.id == entry.id }) {
+            entries[index] = entry
+            saveHistory()
+        }
+    }
+    
     public func clearHistory() {
         entries.removeAll()
         saveHistory()
     }
     
     public var totalFilesOrganized: Int {
-        entries.reduce(0) { $0 + $1.filesOrganized }
+        entries.filter { $0.status == .completed }.reduce(0) { $0 + $1.filesOrganized }
     }
     
     public var totalFoldersCreated: Int {
-        entries.reduce(0) { $0 + $1.foldersCreated }
+        entries.filter { $0.status == .completed }.reduce(0) { $0 + $1.foldersCreated }
+    }
+
+    public var totalSessions: Int {
+        entries.count
+    }
+
+    public var revertedCount: Int {
+        entries.filter { $0.status == .undo || $0.isUndone }.count
     }
     
     public var successRate: Double {
-        guard !entries.isEmpty else { return 0 }
-        let successful = entries.filter { $0.success }.count
-        return Double(successful) / Double(entries.count)
+        let completed = entries.filter { $0.status == .completed }.count
+        let total = entries.count
+        guard total > 0 else { return 0 }
+        return Double(completed) / Double(total)
+    }
+    
+    public var failedCount: Int {
+        entries.filter { $0.status == .failed }.count
     }
     
     private func loadHistory() {
@@ -89,4 +176,3 @@ public class OrganizationHistory: ObservableObject {
         }
     }
 }
-

@@ -14,12 +14,8 @@ struct AIClientFactory {
             return OpenAIClient(config: config)
             
         case .appleFoundationModel:
-            if #available(macOS 15.0, *) {
-                if AppleFoundationModelClient.isAvailable() {
-                    return AppleFoundationModelClient(config: config)
-                } else {
-                    throw AIClientError.appleIntelligenceUnavailable
-                }
+            if AppleFoundationModelClient.isAvailable() {
+                return AppleFoundationModelClient(config: config)
             } else {
                 throw AIClientError.appleIntelligenceUnavailable
             }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FileItem: Identifiable, Codable, Hashable {
+public struct FileItem: Identifiable, Codable, Hashable, Sendable {
     public let id: UUID
     public var path: String
     public var name: String
@@ -16,6 +16,12 @@ public struct FileItem: Identifiable, Codable, Hashable {
     public var isDirectory: Bool
     public var creationDate: Date?
     
+    // Deep scanning metadata
+    public var contentMetadata: ContentMetadata?
+    
+    // For duplicate detection (SHA-256)
+    public var sha256Hash: String?
+    
     public init(
         id: UUID = UUID(),
         path: String,
@@ -23,7 +29,9 @@ public struct FileItem: Identifiable, Codable, Hashable {
         extension: String = "",
         size: Int64 = 0,
         isDirectory: Bool = false,
-        creationDate: Date? = nil
+        creationDate: Date? = nil,
+        contentMetadata: ContentMetadata? = nil,
+        sha256Hash: String? = nil
     ) {
         self.id = id
         self.path = path
@@ -32,6 +40,8 @@ public struct FileItem: Identifiable, Codable, Hashable {
         self.size = size
         self.isDirectory = isDirectory
         self.creationDate = creationDate
+        self.contentMetadata = contentMetadata
+        self.sha256Hash = sha256Hash
     }
     
     public var url: URL? {

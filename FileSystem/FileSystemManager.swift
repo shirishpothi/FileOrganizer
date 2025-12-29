@@ -2,16 +2,16 @@
 //  FileSystemManager.swift
 //  FileOrganizer
 //
-//  Safe file operations with undo tracking
+//  Safe file operations with undo tracking and conflict handling
 //
 
 import Foundation
 
-actor FileSystemManager {
+public actor FileSystemManager {
     private var undoStack: [FileOperation] = []
     private let fileManager = FileManager.default
     
-    struct FileOperation: Codable {
+    public struct FileOperation: Codable, Hashable, Sendable {
         let id: UUID
         let type: OperationType
         let sourcePath: String
@@ -31,17 +31,36 @@ actor FileSystemManager {
             let folderURL = parentURL.appendingPathComponent(suggestion.folderName, isDirectory: true)
             
             if !dryRun {
-                try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
+                var isDirectory: ObjCBool = false
+                if fileManager.fileExists(atPath: folderURL.path, isDirectory: &isDirectory) {
+                    if isDirectory.boolValue {
+                        // Idempotent: Folder exists, continue with subfolders
+                    } else {
+                        // Conflict: File exists where folder should be. Rename existing file.
+                        let backupURL = folderURL.deletingLastPathComponent()
+                            .appendingPathComponent("\(suggestion.folderName)_file_backup_\(UUID().uuidString.prefix(8))")
+                        try fileManager.moveItem(at: folderURL, to: backupURL)
+                        try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
+                        
+                        operations.append(FileOperation(
+                            id: UUID(),
+                            type: .createFolder,
+                            sourcePath: folderURL.path,
+                            destinationPath: nil,
+                            timestamp: Date()
+                        ))
+                    }
+                } else {
+                    try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
+                    operations.append(FileOperation(
+                        id: UUID(),
+                        type: .createFolder,
+                        sourcePath: folderURL.path,
+                        destinationPath: nil,
+                        timestamp: Date()
+                    ))
+                }
             }
-            
-            let operation = FileOperation(
-                id: UUID(),
-                type: .createFolder,
-                sourcePath: folderURL.path,
-                destinationPath: nil,
-                timestamp: Date()
-            )
-            operations.append(operation)
             
             // Create subfolders
             for subfolder in suggestion.subfolders {
@@ -51,10 +70,6 @@ actor FileSystemManager {
         
         for suggestion in plan.suggestions {
             try createFolderRecursive(suggestion, parentURL: baseURL)
-        }
-        
-        if !dryRun {
-            undoStack.append(contentsOf: operations)
         }
         
         return operations
@@ -69,24 +84,41 @@ actor FileSystemManager {
             // Move files in this folder
             for file in suggestion.files {
                 guard let sourceURL = file.url else { continue }
-                let destinationURL = folderURL.appendingPathComponent(sourceURL.lastPathComponent)
+                var destinationURL = folderURL.appendingPathComponent(sourceURL.lastPathComponent)
+                
+                // CRITICAL: Handle re-organization of already organized folders
+                // If the source and destination are already identical, skip it
+                if sourceURL.standardizedFileURL.path == destinationURL.standardizedFileURL.path {
+                    continue
+                }
                 
                 if !dryRun {
                     // Create destination directory if it doesn't exist
-                    try? fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
+                    if !fileManager.fileExists(atPath: folderURL.path) {
+                        try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
+                    }
+                    
+                    // Handle file conflicts - generate unique name if destination exists
+                    if fileManager.fileExists(atPath: destinationURL.path) {
+                        destinationURL = generateUniqueURL(for: destinationURL)
+                    }
+                    
+                    // Check if source still exists
+                    guard fileManager.fileExists(atPath: sourceURL.path) else {
+                        continue
+                    }
                     
                     // Move file
                     try fileManager.moveItem(at: sourceURL, to: destinationURL)
                 }
                 
-                let operation = FileOperation(
+                operations.append(FileOperation(
                     id: UUID(),
                     type: .moveFile,
                     sourcePath: sourceURL.path,
                     destinationPath: destinationURL.path,
                     timestamp: Date()
-                )
-                operations.append(operation)
+                ))
             }
             
             // Recursively move files in subfolders
@@ -99,11 +131,25 @@ actor FileSystemManager {
             try moveFilesInSuggestion(suggestion, parentURL: baseURL)
         }
         
-        if !dryRun {
-            undoStack.append(contentsOf: operations)
+        return operations
+    }
+    
+    /// Generate a unique filename by appending a counter
+    private func generateUniqueURL(for url: URL) -> URL {
+        let directory = url.deletingLastPathComponent()
+        let filename = url.deletingPathExtension().lastPathComponent
+        let ext = url.pathExtension
+        
+        var counter = 1
+        var newURL = url
+        
+        while fileManager.fileExists(atPath: newURL.path) {
+            let newName = ext.isEmpty ? "\(filename)_\(counter)" : "\(filename)_\(counter).\(ext)"
+            newURL = directory.appendingPathComponent(newName)
+            counter += 1
         }
         
-        return operations
+        return newURL
     }
     
     func applyOrganization(_ plan: OrganizationPlan, at baseURL: URL, dryRun: Bool = false) async throws -> [FileOperation] {
@@ -117,7 +163,46 @@ actor FileSystemManager {
         let fileOps = try await moveFiles(plan, at: baseURL, dryRun: dryRun)
         allOperations.append(contentsOf: fileOps)
         
+        if !dryRun {
+            undoStack.append(contentsOf: allOperations)
+        }
+        
         return allOperations
+    }
+    
+    /// Reverses a set of operations (undo/rollback)
+    func reverseOperations(_ operations: [FileOperation]) async throws {
+        // Reverse in opposite order of creation
+        for operation in operations.reversed() {
+            switch operation.type {
+            case .createFolder:
+                // Only remove if empty
+                if fileManager.fileExists(atPath: operation.sourcePath) {
+                    let contents = try? fileManager.contentsOfDirectory(atPath: operation.sourcePath)
+                    if contents?.isEmpty == true {
+                        try fileManager.removeItem(atPath: operation.sourcePath)
+                    }
+                }
+            case .moveFile:
+                if let destinationPath = operation.destinationPath,
+                   fileManager.fileExists(atPath: destinationPath) {
+                    // Ensure the original directory exists
+                    let originalDir = URL(fileURLWithPath: operation.sourcePath).deletingLastPathComponent()
+                    if !fileManager.fileExists(atPath: originalDir.path) {
+                        try fileManager.createDirectory(at: originalDir, withIntermediateDirectories: true)
+                    }
+                    
+                    // Check if original location is occupied
+                    var finalSourcePath = operation.sourcePath
+                    if fileManager.fileExists(atPath: finalSourcePath) {
+                        let uniqueURL = generateUniqueURL(for: URL(fileURLWithPath: finalSourcePath))
+                        finalSourcePath = uniqueURL.path
+                    }
+                    
+                    try fileManager.moveItem(atPath: destinationPath, toPath: finalSourcePath)
+                }
+            }
+        }
     }
     
     func undoLastOperation() async throws {
@@ -125,25 +210,9 @@ actor FileSystemManager {
             throw FileSystemError.noOperationToUndo
         }
         
-        try undoOperation(lastOperation)
+        // This is a simplified undo. For multi-state, we use reverseOperations.
+        try await reverseOperations([lastOperation])
         undoStack.removeLast()
-    }
-    
-    func undoOperation(_ operation: FileOperation) throws {
-        switch operation.type {
-        case .createFolder:
-            // Remove created folder
-            if fileManager.fileExists(atPath: operation.sourcePath) {
-                try fileManager.removeItem(atPath: operation.sourcePath)
-            }
-            
-        case .moveFile:
-            // Move file back to original location
-            if let destinationPath = operation.destinationPath,
-               fileManager.fileExists(atPath: destinationPath) {
-                try fileManager.moveItem(atPath: destinationPath, toPath: operation.sourcePath)
-            }
-        }
     }
     
     func clearUndoStack() {
@@ -156,6 +225,7 @@ enum FileSystemError: LocalizedError {
     case fileNotFound
     case permissionDenied
     case invalidPath
+    case pathAlreadyExists(String)
     
     var errorDescription: String? {
         switch self {
@@ -167,7 +237,8 @@ enum FileSystemError: LocalizedError {
             return "Permission denied"
         case .invalidPath:
             return "Invalid path"
+        case .pathAlreadyExists(let path):
+            return "Path already exists: \(path). The file was skipped or renamed."
         }
     }
 }
-

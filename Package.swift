@@ -1,10 +1,10 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.2
 import PackageDescription
 
 let package = Package(
     name: "FileOrganizer",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v26)
     ],
     products: [
         .library(
@@ -22,7 +22,13 @@ let package = Package(
             exclude: [
                 "FileOrganizerApp.swift",
                 "Tests",
-                "FinderExtension/FileOrganizerActionExtension.swift"
+                "FinderExtension/FileOrganizerActionExtension.swift",
+                "FileOrganizer.app",
+                "build.sh",
+                "Makefile",
+                "README.md",
+                "QUICK_START.md",
+                "SETUP.md"
             ],
             sources: [
                 "AI",
@@ -43,10 +49,17 @@ let package = Package(
             exclude: [
                 "Tests",
                 "FinderExtension",
-                "AI", "FileSystem", "Models", "Organizer", "Utilities", "ViewModels", "Views"
+                "AI", "FileSystem", "Models", "Organizer", "Utilities", "ViewModels", "Views",
+                "FileOrganizer.app",
+                "build.sh",
+                "Makefile",
+                "README.md",
+                "QUICK_START.md",
+                "SETUP.md"
             ],
             sources: [
-                "FileOrganizerApp.swift"
+                "FileOrganizerApp.swift",
+                "AppCoordinator.swift"
             ]
         ),
         .testTarget(
@@ -56,3 +69,4 @@ let package = Package(
         )
     ]
 )
+
