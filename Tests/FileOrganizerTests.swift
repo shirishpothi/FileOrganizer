@@ -3,19 +3,23 @@ import XCTest
 @testable import FileOrganizerLib
 
 // Mock AI Client for testing
-class MockAIClient: AIClientProtocol {
-    var config: AIConfig
+actor MockAIClient: AIClientProtocol {
+    let config: AIConfig
     var analyzeHandler: (([FileItem]) async throws -> OrganizationPlan)?
     
     init(config: AIConfig) {
         self.config = config
     }
     
-    func analyze(files: [FileItem]) async throws -> OrganizationPlan {
+    func analyze(files: [FileItem], customInstructions: String?, personaPrompt: String?, temperature: Double?) async throws -> OrganizationPlan {
         if let handler = analyzeHandler {
             return try await handler(files)
         }
         return OrganizationPlan(suggestions: [], unorganizedFiles: [], notes: "")
+    }
+    
+    func setHandler(_ handler: @escaping @Sendable ([FileItem]) async throws -> OrganizationPlan) {
+        self.analyzeHandler = handler
     }
 }
 
@@ -26,24 +30,24 @@ class FileOrganizerTests: XCTestCase {
     var mockClient: MockAIClient!
     var tempDirectory: URL!
     
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         folderOrganizer = FolderOrganizer()
         let config = AIConfig(apiKey: "test-key", model: "test-model")
         mockClient = MockAIClient(config: config)
         
         // Create a temporary directory for testing
         tempDirectory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        try? FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
     }
     
-    override func tearDown() {
+    override func tearDown() async throws {
         if let tempDirectory = tempDirectory {
             try? FileManager.default.removeItem(at: tempDirectory)
         }
         folderOrganizer = nil
         mockClient = nil
-        super.tearDown()
+        try await super.tearDown()
     }
     
     func testOrganizeFlow() async throws {
@@ -55,7 +59,7 @@ class FileOrganizerTests: XCTestCase {
         folderOrganizer.aiClient = mockClient
         
         // 3. Setup: Define mock behavior
-        mockClient.analyzeHandler = { files in
+        await mockClient.setHandler { files in
             // Verify we received the file
             XCTAssertEqual(files.count, 1)
             XCTAssertEqual(files.first?.name, "test")

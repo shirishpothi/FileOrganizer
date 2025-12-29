@@ -61,10 +61,15 @@ actor DirectoryScanner {
     ) async throws {
         let resourceKeys: [URLResourceKey] = [.isDirectoryKey, .fileSizeKey, .creationDateKey, .isHiddenKey]
         
+        var options: FileManager.DirectoryEnumerationOptions = [.skipsPackageDescendants]
+        if !includeHidden {
+            options.insert(.skipsHiddenFiles)
+        }
+        
         guard let enumerator = fileManager.enumerator(
             at: url,
             includingPropertiesForKeys: resourceKeys,
-            options: [.skipsPackageDescendants, .skipsHiddenFiles]
+            options: options
         ) else {
             throw ScannerError.enumerationFailed
         }

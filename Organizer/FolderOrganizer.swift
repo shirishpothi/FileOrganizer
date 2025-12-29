@@ -34,7 +34,7 @@ public enum OrganizationState: Equatable {
     }
 }
 
-public enum OrganizationError: LocalizedError {
+public enum OrganizationError: LocalizedError, Equatable {
     case clientNotConfigured
     case noCurrentPlan
     case fileMoveFailed(String)

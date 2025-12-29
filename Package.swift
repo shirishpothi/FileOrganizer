@@ -27,8 +27,10 @@ let package = Package(
                 "build.sh",
                 "Makefile",
                 "README.md",
-                "QUICK_START.md",
-                "SETUP.md"
+                "AppCoordinator.swift",
+                "Info.plist",
+                ".git",
+                ".gitignore"
             ],
             sources: [
                 "AI",
@@ -54,8 +56,9 @@ let package = Package(
                 "build.sh",
                 "Makefile",
                 "README.md",
-                "QUICK_START.md",
-                "SETUP.md"
+                "Info.plist",
+                ".git",
+                ".gitignore"
             ],
             sources: [
                 "FileOrganizerApp.swift",
