@@ -34,6 +34,7 @@ jobs:
 
       - name: Build the project
         run: |
+          set +e
           xcodebuild build \
             -project "FileOrganiser.xcodeproj" \
             -scheme "FileOrganiser" \
@@ -48,12 +49,24 @@ jobs:
             2>&1 | tee build_output.log
 
           BUILD_EXIT_CODE=${PIPESTATUS[0]}
+
+          echo ""
+          echo "=========================================="
+          echo "BUILD EXIT CODE: $BUILD_EXIT_CODE"
+          echo "=========================================="
+          echo ""
+
           if [ $BUILD_EXIT_CODE -ne 0 ]; then
+            echo "=== ALL ERRORS ==="
+            grep -i "error:" build_output.log || true
+            echo ""
+            echo "=== UNDEFINED SYMBOLS ==="
+            grep -i "undefined\|cannot find\|no such module" build_output.log || true
+            echo ""
+            echo "=== LAST 200 LINES OF BUILD LOG ==="
+            tail -200 build_output.log
             echo ""
             echo "=== BUILD FAILED ==="
-            grep -E "(error:)" build_output.log | head -50 || true
-            echo ""
-            tail -100 build_output.log
             exit $BUILD_EXIT_CODE
           fi
           echo "✅ Build succeeded"
