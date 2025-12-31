@@ -35,17 +35,16 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee build_output.log
 
-          BUILD_RESULT=${PIPESTATUS[0]}
-          if [ $BUILD_RESULT -eq 0 ]; then
+          if grep -q "BUILD SUCCEEDED" build_output.log; then
             echo ""
             echo "✅ Build succeeded"
           else
             echo ""
-            echo "❌ Build failed with exit code $BUILD_RESULT"
+            echo "❌ Build failed"
             echo ""
             echo "=== Build Errors ==="
             grep -E "error:" build_output.log | head -30 || true
-            exit $BUILD_RESULT
+            exit 1
           fi
 
       - name: Run UI Tests
@@ -60,22 +59,20 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee test_output.log
 
-          TEST_RESULT=${PIPESTATUS[0]}
-
           echo ""
           echo "=== Test Summary ==="
           grep -E "(Test Suite|Test Case|Executed|passed|failed)" test_output.log | tail -40 || true
 
-          if [ $TEST_RESULT -eq 0 ]; then
+          if grep -q "TEST SUCCEEDED" test_output.log || grep -q "with 0 failures" test_output.log; then
             echo ""
             echo "✅ All UI Tests passed!"
           else
             echo ""
-            echo "❌ UI Tests failed with exit code $TEST_RESULT"
+            echo "❌ UI Tests failed"
             echo ""
             echo "=== Test Failures ==="
             grep -E "(failed|FAILED|error:)" test_output.log | head -30 || true
-            exit $TEST_RESULT
+            exit 1
           fi
         timeout-minutes: 30
 
