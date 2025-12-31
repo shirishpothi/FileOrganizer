@@ -363,21 +363,23 @@ class CanvasNodeTests: XCTestCase {
 
 // MARK: - Canvas View Model Tests
 
-@MainActor
 class CanvasViewModelTests: XCTestCase {
 
     var viewModel: CanvasViewModel!
 
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
         viewModel = CanvasViewModel()
     }
 
+    @MainActor
     override func tearDown() async throws {
         viewModel = nil
         try await super.tearDown()
     }
 
+    @MainActor
     func testLoadPlan() {
         let file1 = FileItem(path: "/test/doc1.pdf", name: "doc1", extension: "pdf")
         let file2 = FileItem(path: "/test/doc2.txt", name: "doc2", extension: "txt")
@@ -402,6 +404,7 @@ class CanvasViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.connections.count, 2)
     }
 
+    @MainActor
     func testLoadPlanWithUnorganizedFiles() {
         let organizedFile = FileItem(path: "/test/doc1.pdf", name: "doc1", extension: "pdf")
         let unorganizedFile = FileItem(path: "/test/misc.dat", name: "misc", extension: "dat")
@@ -422,6 +425,7 @@ class CanvasViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.nodes.count, 4)
     }
 
+    @MainActor
     func testUpdateNodePosition() {
         let file = FileItem(path: "/test/doc.pdf", name: "doc", extension: "pdf")
         let plan = OrganizationPlan(
@@ -449,6 +453,7 @@ class CanvasViewModelTests: XCTestCase {
         XCTAssertEqual(updatedNode?.position, newPosition)
     }
 
+    @MainActor
     func testMoveFile() {
         let file1 = FileItem(path: "/test/doc1.pdf", name: "doc1", extension: "pdf")
         let file2 = FileItem(path: "/test/doc2.txt", name: "doc2", extension: "txt")
@@ -485,6 +490,7 @@ class CanvasViewModelTests: XCTestCase {
         XCTAssertEqual(file1Connection?.fromNodeId, folder2Id)
     }
 
+    @MainActor
     func testGenerateUpdatedPlan() {
         let file = FileItem(path: "/test/doc.pdf", name: "doc", extension: "pdf")
         let originalPlan = OrganizationPlan(
@@ -501,6 +507,7 @@ class CanvasViewModelTests: XCTestCase {
         XCTAssertEqual(updatedPlan?.suggestions.first?.folderName, "Original")
     }
 
+    @MainActor
     func testResetChanges() {
         let file = FileItem(path: "/test/doc.pdf", name: "doc", extension: "pdf")
         let plan = OrganizationPlan(
@@ -519,6 +526,7 @@ class CanvasViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.hasChanges)
     }
 
+    @MainActor
     func testScaleAndOffset() {
         XCTAssertEqual(viewModel.scale, 1.0)
         XCTAssertEqual(viewModel.offset, .zero)
@@ -530,6 +538,7 @@ class CanvasViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.offset, CGPoint(x: 100, y: 50))
     }
 
+    @MainActor
     func testSelectionState() {
         XCTAssertNil(viewModel.selectedNodeId)
         XCTAssertNil(viewModel.draggedNodeId)
@@ -588,21 +597,23 @@ class CanvasConnectionTests: XCTestCase {
 
 // MARK: - Integration Tests
 
-@MainActor
 class WorkspaceHealthIntegrationTests: XCTestCase {
 
     var healthManager: WorkspaceHealthManager!
 
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
         healthManager = WorkspaceHealthManager()
     }
 
+    @MainActor
     override func tearDown() async throws {
         healthManager = nil
         try await super.tearDown()
     }
 
+    @MainActor
     func testTakeSnapshotAndGetGrowth() async {
         let testPath = "/test/downloads"
         let files = [
@@ -632,6 +643,7 @@ class WorkspaceHealthIntegrationTests: XCTestCase {
         // This is expected behavior
     }
 
+    @MainActor
     func testAnalyzeDirectoryForOpportunities() async {
         let testPath = "/test/downloads"
 
@@ -671,6 +683,7 @@ class WorkspaceHealthIntegrationTests: XCTestCase {
         XCTAssertTrue(hasLargeFilesOpp)
     }
 
+    @MainActor
     func testDismissOpportunity() async {
         let testPath = "/test/downloads"
 
@@ -710,6 +723,7 @@ class WorkspaceHealthIntegrationTests: XCTestCase {
     }
 
 
+    @MainActor
     func testComputedProperties() async {
         let testPath = "/test/downloads"
 
@@ -742,6 +756,7 @@ class WorkspaceHealthIntegrationTests: XCTestCase {
         XCTAssertFalse(healthManager.formattedTotalSavings.isEmpty)
     }
 
+    @MainActor
     func testClearInsights() {
         let insight = HealthInsight(
             directoryPath: "/test",
@@ -759,6 +774,7 @@ class WorkspaceHealthIntegrationTests: XCTestCase {
         XCTAssertTrue(healthManager.insights.isEmpty)
     }
 
+    @MainActor
     func testMarkInsightAsRead() {
         let insight = HealthInsight(
             directoryPath: "/test",

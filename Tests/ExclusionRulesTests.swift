@@ -2,11 +2,11 @@
 import XCTest
 @testable import FileOrganizerLib
 
-@MainActor
 class ExclusionRulesTests: XCTestCase {
     
     var manager: ExclusionRulesManager!
     
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
         manager = ExclusionRulesManager()
@@ -16,6 +16,7 @@ class ExclusionRulesTests: XCTestCase {
         }
     }
     
+    @MainActor
     func testExtensionExclusion() {
         let rule = ExclusionRule(type: .fileExtension, pattern: "tmp")
         manager.addRule(rule)
@@ -27,6 +28,7 @@ class ExclusionRulesTests: XCTestCase {
         XCTAssertFalse(manager.shouldExclude(file2))
     }
     
+    @MainActor
     func testFileNameExclusion() {
         let rule = ExclusionRule(type: .fileName, pattern: "secret")
         manager.addRule(rule)
@@ -38,6 +40,7 @@ class ExclusionRulesTests: XCTestCase {
         XCTAssertFalse(manager.shouldExclude(file2))
     }
     
+    @MainActor
     func testFolderNameExclusion() {
         let rule = ExclusionRule(type: .folderName, pattern: "cache")
         manager.addRule(rule)
@@ -49,6 +52,7 @@ class ExclusionRulesTests: XCTestCase {
         XCTAssertFalse(manager.shouldExclude(file2))
     }
     
+    @MainActor
     func testDisabledRule() {
         let rule = ExclusionRule(type: .fileExtension, pattern: "tmp", isEnabled: false)
         manager.addRule(rule)

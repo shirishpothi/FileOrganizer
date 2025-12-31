@@ -2,17 +2,18 @@
 import XCTest
 @testable import FileOrganizerLib
 
-@MainActor
 class HistoryTests: XCTestCase {
     
     var history: OrganizationHistory!
     
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
         history = OrganizationHistory()
         history.clearHistory() // Start with clean slate
     }
     
+    @MainActor
     func testAddEntry() {
         let entry = OrganizationHistoryEntry(
             directoryPath: "/test/path",
@@ -28,6 +29,7 @@ class HistoryTests: XCTestCase {
         XCTAssertEqual(history.totalFoldersCreated, 2)
     }
     
+    @MainActor
     func testStatsCalculation() {
         let entry1 = OrganizationHistoryEntry(directoryPath: "/p1", filesOrganized: 10, foldersCreated: 3, status: .completed)
         let entry2 = OrganizationHistoryEntry(directoryPath: "/p2", filesOrganized: 5, foldersCreated: 1, status: .completed)
@@ -44,6 +46,7 @@ class HistoryTests: XCTestCase {
         XCTAssertEqual(history.successRate, 2.0/3.0, accuracy: 0.01)
     }
     
+    @MainActor
     func testPersistence() {
         let entry = OrganizationHistoryEntry(directoryPath: "/persist", filesOrganized: 1, foldersCreated: 1)
         history.addEntry(entry)

@@ -23,13 +23,13 @@ actor MockAIClient: AIClientProtocol, @unchecked Sendable {
     }
 }
 
-@MainActor
 class FileOrganizerTests: XCTestCase {
 
     var folderOrganizer: FolderOrganizer!
     var mockClient: MockAIClient!
     var tempDirectory: URL!
 
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
         folderOrganizer = FolderOrganizer()
@@ -41,6 +41,7 @@ class FileOrganizerTests: XCTestCase {
         try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
     }
 
+    @MainActor
     override func tearDown() async throws {
         if let tempDirectory = tempDirectory {
             try? FileManager.default.removeItem(at: tempDirectory)
@@ -50,6 +51,7 @@ class FileOrganizerTests: XCTestCase {
         try await super.tearDown()
     }
 
+    @MainActor
     func testOrganizeFlow() async throws {
         // 1. Setup: Create a dummy file to scan
         let dummyFileURL = tempDirectory.appendingPathComponent("test.txt")
@@ -82,6 +84,7 @@ class FileOrganizerTests: XCTestCase {
         XCTAssertEqual(folderOrganizer.currentPlan?.suggestions.first?.folderName, "Docs")
     }
 
+    @MainActor
     func testClientNotConfiguredError() async {
         // Ensure client is nil
         folderOrganizer.aiClient = nil
@@ -94,6 +97,7 @@ class FileOrganizerTests: XCTestCase {
         }
     }
 
+    @MainActor
     func testCancelOrganization() async throws {
         // Setup
         let dummyFileURL = tempDirectory.appendingPathComponent("test.txt")
@@ -122,6 +126,7 @@ class FileOrganizerTests: XCTestCase {
         task.cancel()
     }
 
+    @MainActor
     func testResetClearsState() async throws {
         // Setup some state
         let dummyFileURL = tempDirectory.appendingPathComponent("test.txt")

@@ -2,12 +2,12 @@
 import XCTest
 @testable import FileOrganizerLib
 
-@MainActor
 class FileSystemManagerTests: XCTestCase {
     
     var fileSystemManager: FileSystemManager!
     var tempDirectory: URL!
     
+    @MainActor
     override func setUp() async throws {
         try await super.setUp()
         fileSystemManager = FileSystemManager()
@@ -15,12 +15,14 @@ class FileSystemManagerTests: XCTestCase {
         try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
     }
     
+    @MainActor
     override func tearDown() async throws {
         try? FileManager.default.removeItem(at: tempDirectory)
         fileSystemManager = nil
         try await super.tearDown()
     }
     
+    @MainActor
     func testCreateFolders() async throws {
         let plan = OrganizationPlan(
             suggestions: [
@@ -39,6 +41,7 @@ class FileSystemManagerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: tempDirectory.appendingPathComponent("Folder1/Subfolder1").path))
     }
     
+    @MainActor
     func testMoveFilesWithConflicts() async throws {
         let sourceFile = tempDirectory.appendingPathComponent("test.txt")
         try "Content".write(to: sourceFile, atomically: true, encoding: .utf8)
@@ -65,6 +68,7 @@ class FileSystemManagerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: destFolder.appendingPathComponent("test_1.txt").path))
     }
     
+    @MainActor
     func testUndoOperations() async throws {
         let file = tempDirectory.appendingPathComponent("to_move.txt")
         try "data".write(to: file, atomically: true, encoding: .utf8)
