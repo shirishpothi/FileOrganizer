@@ -15,20 +15,29 @@ jobs:
 
       - name: Show environment info
         run: |
+          echo "=== macOS Version ==="
+          sw_vers
+          echo ""
           echo "=== Xcode Version ==="
           xcodebuild -version
+          echo ""
+          echo "=== Xcode Path ==="
+          xcode-select -p
           echo ""
           echo "=== Swift Version ==="
           swift --version
           echo ""
+          echo "=== Available Xcode Versions ==="
+          ls -la /Applications/ | grep Xcode || true
+          echo ""
           echo "=== Available SDKs ==="
           xcodebuild -showsdks
           echo ""
-          echo "=== macOS Version ==="
-          sw_vers
-          echo ""
           echo "=== Project Schemes ==="
           xcodebuild -project "FileOrganiser.xcodeproj" -list
+          echo ""
+          echo "=== Available Destinations ==="
+          xcodebuild -showdestinations -project "FileOrganiser.xcodeproj" -scheme "FileOrganiser" 2>/dev/null | head -30 || true
 
       - name: Build the project
         run: |
@@ -36,13 +45,16 @@ jobs:
           xcodebuild build \
             -project "FileOrganiser.xcodeproj" \
             -scheme "FileOrganiser" \
-            -destination 'platform=macOS' \
+            -destination 'platform=macOS,arch=arm64' \
             -configuration Debug \
+            -allowProvisioningUpdates \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
             DEVELOPMENT_TEAM="" \
             SWIFT_TREAT_WARNINGS_AS_ERRORS=NO \
             GCC_TREAT_WARNINGS_AS_ERRORS=NO \
+            ONLY_ACTIVE_ARCH=YES \
             2>&1 | tee build_output.log
 
           BUILD_EXIT_CODE=${PIPESTATUS[0]}
@@ -70,14 +82,17 @@ jobs:
           xcodebuild test \
             -project "FileOrganiser.xcodeproj" \
             -scheme "FileOrganiser" \
-            -destination 'platform=macOS' \
+            -destination 'platform=macOS,arch=arm64' \
             -only-testing:FileOrganiserUITests \
             -resultBundlePath TestResults.xcresult \
+            -allowProvisioningUpdates \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
             DEVELOPMENT_TEAM="" \
             SWIFT_TREAT_WARNINGS_AS_ERRORS=NO \
             GCC_TREAT_WARNINGS_AS_ERRORS=NO \
+            ONLY_ACTIVE_ARCH=YES \
             2>&1 | tee test_output.log
 
           TEST_EXIT_CODE=${PIPESTATUS[0]}
