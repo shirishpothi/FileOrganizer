@@ -17,6 +17,13 @@ A native macOS SwiftUI application that uses AI to intelligently organize direct
 - 🗂️ **Organization History**: Track all operations with detailed analytics and reasoning.
 - 🛡️ **Safe by Design**: Includes dry-run modes, comprehensive validation, and exclusion rules.
 
+<img width="1348" height="1133" alt="A preview of the mid-generation UI, with streaming enabled" src="https://share.cleanshot.com/YPzjGbh5" />
+
+<img width="1348" height="1133" alt="Setting View" src="https://share.cleanshot.com/JdYKL7HH" />
+
+<img width="1348" height="1133" alt="A preview of the post-organisation UI" src="https://share.cleanshot.com/QmDQfqz6" />
+
+
 ## 🚀 Quick Start
 
 ### Prerequisites
