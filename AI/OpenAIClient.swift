@@ -30,11 +30,16 @@ final class OpenAIClient: AIClientProtocol, @unchecked Sendable {
             throw AIClientError.missingAPIKey
         }
         
+        // Use standard OpenAI-compatible endpoint structure for both providers
+        // OpenAI: https://api.openai.com/v1/chat/completions
+        // Ollama: http://localhost:11434/v1/chat/completions
         let endpoint: String
-        if config.provider == .ollama {
-            endpoint = "\(apiURL)/api/chat"
+        if apiURL.hasSuffix("/v1/chat/completions") {
+             endpoint = apiURL
+        } else if apiURL.hasSuffix("/") {
+             endpoint = "\(apiURL)v1/chat/completions"
         } else {
-            endpoint = "\(apiURL)/v1/chat/completions"
+             endpoint = "\(apiURL)/v1/chat/completions"
         }
         
         guard let url = URL(string: endpoint) else {
@@ -102,21 +107,13 @@ final class OpenAIClient: AIClientProtocol, @unchecked Sendable {
             
             let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any]
             
-            let content: String
-            if config.provider == .ollama {
-                guard let message = jsonResponse?["message"] as? [String: Any],
-                      let text = message["content"] as? String else {
-                    throw AIClientError.invalidResponseFormat
-                }
-                content = text
-            } else {
-                guard let choices = jsonResponse?["choices"] as? [[String: Any]],
-                      let firstChoice = choices.first,
-                      let message = firstChoice["message"] as? [String: Any],
-                      let text = message["content"] as? String else {
-                    throw AIClientError.invalidResponseFormat
-                }
-                content = text
+
+            
+            guard let choices = jsonResponse?["choices"] as? [[String: Any]],
+                  let firstChoice = choices.first,
+                  let message = firstChoice["message"] as? [String: Any],
+                  let content = message["content"] as? String else {
+                throw AIClientError.invalidResponseFormat
             }
             
             return try ResponseParser.parseResponse(content, originalFiles: files)
@@ -180,16 +177,10 @@ final class OpenAIClient: AIClientProtocol, @unchecked Sendable {
                     if let jsonData = jsonString.data(using: .utf8),
                        let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
                         
-                        let deltaContent: String?
-                        if config.provider == .ollama {
-                            let message = json["message"] as? [String: Any]
-                            deltaContent = message?["content"] as? String
-                        } else {
-                            let choices = json["choices"] as? [[String: Any]]
-                            let firstChoice = choices?.first
-                            let delta = firstChoice?["delta"] as? [String: Any]
-                            deltaContent = delta?["content"] as? String
-                        }
+                        let choices = json["choices"] as? [[String: Any]]
+                        let firstChoice = choices?.first
+                        let delta = firstChoice?["delta"] as? [String: Any]
+                        let deltaContent = delta?["content"] as? String
 
                         if let content = deltaContent {
                             if firstTokenTime == nil {
