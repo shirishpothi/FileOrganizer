@@ -213,15 +213,32 @@ struct SettingsView: View {
                         Section {
                             HStack(spacing: 12) {
                                 Button(action: testConnection) {
-                                    HStack {
+                                    HStack(spacing: 8) {
                                         if isTestingConnection {
-                                            BouncingSpinner(size: 16, color: .accentColor)
+                                            BouncingSpinner(size: 14, color: .primary)
+                                        } else {
+                                            Image(systemName: "network")
+                                                .font(.system(size: 14, weight: .semibold))
                                         }
+                                        
                                         Text("Test Connection")
+                                            .font(.system(size: 14, weight: .medium))
                                     }
+                                    .foregroundColor(.primary)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(.ultraThinMaterial)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                    )
+                                    .contentShape(Rectangle())
                                 }
-                                .buttonStyle(.hapticBounce)
+                                .buttonStyle(HapticBounceButtonStyle()) // Custom liquid style with haptic bounce
                                 .disabled(isTestingConnection || !viewModel.config.provider.isAvailable)
+                                .opacity(viewModel.config.provider.isAvailable ? 1.0 : 0.5)
                                 .accessibilityIdentifier("TestConnectionButton")
 
                                 if let status = testConnectionStatus {
