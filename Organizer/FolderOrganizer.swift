@@ -259,25 +259,25 @@ public class FolderOrganizer: ObservableObject, StreamingDelegate {
         do {
             currentDirectory = directory
 
-            await updateState(.scanning, stage: "Scanning directory...", progress: 0.05)
+            updateState(.scanning, stage: "Scanning directory...", progress: 0.05)
 
             // Check cancellation frequently
             try checkCancellation()
 
             var files = try await scanner.scanDirectory(at: directory)
 
-            await updateProgress(0.15, stage: "Found \(files.count) files")
+            updateProgress(0.15, stage: "Found \(files.count) files")
 
             try checkCancellation()
 
             if let exclusionRules = exclusionRules {
                 files = exclusionRules.filterFiles(files)
-                await updateProgress(0.20, stage: "Filtered to \(files.count) files")
+                updateProgress(0.20, stage: "Filtered to \(files.count) files")
             }
 
             try checkCancellation()
 
-            await updateState(.organizing, stage: "Organizing with AI...", progress: 0.25)
+            updateState(.organizing, stage: "Organizing with AI...", progress: 0.25)
             await MainActor.run {
                 isStreaming = true
             }
@@ -295,7 +295,7 @@ public class FolderOrganizer: ObservableObject, StreamingDelegate {
 
             stopTimeoutTimer()
 
-            await updateState(.organizing, stage: "Validating plan...", progress: 0.85)
+            updateState(.organizing, stage: "Validating plan...", progress: 0.85)
             await MainActor.run {
                 isStreaming = false
             }
@@ -304,18 +304,18 @@ public class FolderOrganizer: ObservableObject, StreamingDelegate {
 
             try checkCancellation()
 
-            await updateState(.ready, stage: "Ready!", progress: 1.0)
+            updateState(.ready, stage: "Ready!", progress: 1.0)
             await MainActor.run {
                 currentPlan = plan
             }
 
         } catch is CancellationError {
             stopTimeoutTimer()
-            await resetToIdle()
+            resetToIdle()
             throw CancellationError()
         } catch let error as OrganizationError where error == .cancelled {
             stopTimeoutTimer()
-            await resetToIdle()
+            resetToIdle()
             throw CancellationError()
         } catch {
             stopTimeoutTimer()
@@ -418,7 +418,7 @@ public class FolderOrganizer: ObservableObject, StreamingDelegate {
         do {
             try await currentTask?.value
         } catch is CancellationError {
-            await resetToIdle()
+            resetToIdle()
         }
     }
 

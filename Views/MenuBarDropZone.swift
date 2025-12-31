@@ -104,12 +104,14 @@ public class MenuBarController: ObservableObject {
         if organizer.aiClient != nil {
             // For quick mode, we'll use a simplified approach
             // Analyze just this one file with context
-            let contextPrompt = """
+            // For future AI integration, we can use the following prompt:
+            /*
             Quick organize this single file. Existing folders: \(existingFolders.joined(separator: ", ")).
             Choose the best existing folder OR suggest a new folder name.
             Also suggest a better filename if the current name is not descriptive.
             Return JSON: {"folder": "FolderName", "suggestedFilename": "optional_new_name.ext", "reason": "brief explanation"}
-            """
+            */
+
 
             // For now, return a smart default based on file type
             return suggestBasedOnFileType(fileItem, existingFolders: existingFolders, parentDirectory: parentDirectory)

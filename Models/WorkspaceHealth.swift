@@ -428,7 +428,6 @@ public class WorkspaceHealthManager: ObservableObject {
         // Check for screenshot clutter
         let screenshots = files.filter { isScreenshot($0) }
         if screenshots.count >= 10 {
-            let totalSize = screenshots.reduce(0) { $0 + $1.size }
             opportunities.append(CleanupOpportunity(
                 type: .screenshotClutter,
                 directoryPath: path,

@@ -627,7 +627,7 @@ class WorkspaceHealthIntegrationTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(healthManager.snapshots[testPath]?.count ?? 0, 2)
 
         // Get growth
-        let growth = healthManager.getGrowth(for: testPath, period: .week)
+        let _ = healthManager.getGrowth(for: testPath, period: .week)
         // Growth might be nil if snapshots are too close together
         // This is expected behavior
     }

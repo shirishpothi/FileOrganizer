@@ -1,0 +1,107 @@
+warning: 'fileorganizer': found 2 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/shirishpothi/Downloads/File Organiser/FileOrganizer/build_log.txt
+    /Users/shirishpothi/Downloads/File Organiser/FileOrganizer/build_log_v2.txt
+warning: 'fileorganizer': found 2 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/shirishpothi/Downloads/File Organiser/FileOrganizer/build_log.txt
+    /Users/shirishpothi/Downloads/File Organiser/FileOrganizer/build_log_v2.txt
+Building for debugging...
+[0/12] /Users/shirishpothi/Downloads/File runner.swift
+[1/12] Write sources
+[5/12] Write FileOrganizerApp-entitlement.plist
+[6/12] Write swift-version--58304C5D6DBC2206.txt
+[8/59] Compiling FileOrganizerLib ExtensionCommunication.swift
+[9/59] Compiling FileOrganizerLib AIConfig.swift
+[10/59] Compiling FileOrganizerLib ExclusionRule.swift
+[11/59] Compiling FileOrganizerLib FileItem.swift
+[12/59] Compiling FileOrganizerLib FolderSuggestion.swift
+[13/59] Compiling FileOrganizerLib OrganizationHistory.swift
+[14/59] Compiling FileOrganizerLib OrganizationPersona.swift
+[15/59] Compiling FileOrganizerLib AIClientFactory.swift
+[16/59] Compiling FileOrganizerLib AIClientProtocol.swift
+[17/59] Compiling FileOrganizerLib AppleFoundationModelClient.swift
+[18/59] Compiling FileOrganizerLib OpenAIClient.swift
+[19/59] Compiling FileOrganizerLib PromptBuilder.swift
+[20/59] Compiling FileOrganizerLib ResponseParser.swift
+[21/59] Compiling FileOrganizerLib SystemPrompt.swift
+[22/65] Compiling FileOrganizerLib OrganizationPlan.swift
+[23/65] Compiling FileOrganizerLib WatchedFolder.swift
+[24/65] Compiling FileOrganizerLib WorkspaceHealth.swift
+[25/65] Compiling FileOrganizerLib FileOrganizationValidator.swift
+[26/65] Compiling FileOrganizerLib FolderOrganizer.swift
+[27/65] Compiling FileOrganizerLib PreviewManager.swift
+[28/65] Compiling FileOrganizerLib Constants.swift
+[29/65] Emitting module FileOrganizerLib
+[30/65] Compiling FileOrganizerLib DebugLogger.swift
+[31/65] Compiling FileOrganizerLib ExtensionListener.swift
+[32/65] Compiling FileOrganizerLib Extensions.swift
+[33/65] Compiling FileOrganizerLib KeychainManager.swift
+[34/65] Compiling FileOrganizerLib SettingsViewModel.swift
+[35/65] Compiling FileOrganizerLib AnalysisView.swift
+[36/65] Compiling FileOrganizerLib AppCommands.swift
+[37/65] Compiling FileOrganizerLib CanvasPreviewView.swift
+[38/65] Compiling FileOrganizerLib ContentView.swift
+[39/65] Compiling FileOrganizerLib DirectorySelectionView.swift
+[40/65] Compiling FileOrganizerLib DuplicatesView.swift
+[41/65] Compiling FileOrganizerLib ExclusionRulesView.swift
+[42/65] Compiling FileOrganizerLib ContentAnalyzer.swift
+[43/65] Compiling FileOrganizerLib DirectoryScanner.swift
+[44/65] Compiling FileOrganizerLib DuplicateDetector.swift
+[45/65] Compiling FileOrganizerLib FileSystemManager.swift
+[46/65] Compiling FileOrganizerLib FolderWatcher.swift
+[47/65] Compiling FileOrganizerLib SemanticDuplicateDetector.swift
+[48/65] Compiling FileOrganizerLib VisionAnalyzer.swift
+[49/65] Compiling FileOrganizerLib FileDropDelegate.swift
+/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/Views/MenuBarDropZone.swift:107:17: error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+105 |             // For quick mode, we'll use a simplified approach
+106 |             // Analyze just this one file with context
+107 |             let contextPrompt = """
+    |                 `- error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+108 |             Quick organize this single file. Existing folders: \(existingFolders.joined(separator: ", ")).
+109 |             Choose the best existing folder OR suggest a new folder name.
+[50/65] Compiling FileOrganizerLib HistoryView.swift
+/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/Views/MenuBarDropZone.swift:107:17: error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+105 |             // For quick mode, we'll use a simplified approach
+106 |             // Analyze just this one file with context
+107 |             let contextPrompt = """
+    |                 `- error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+108 |             Quick organize this single file. Existing folders: \(existingFolders.joined(separator: ", ")).
+109 |             Choose the best existing folder OR suggest a new folder name.
+[51/65] Compiling FileOrganizerLib LiquidDropdown.swift
+/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/Views/MenuBarDropZone.swift:107:17: error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+105 |             // For quick mode, we'll use a simplified approach
+106 |             // Analyze just this one file with context
+107 |             let contextPrompt = """
+    |                 `- error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+108 |             Quick organize this single file. Existing folders: \(existingFolders.joined(separator: ", ")).
+109 |             Choose the best existing folder OR suggest a new folder name.
+[52/65] Compiling FileOrganizerLib MenuBarDropZone.swift
+/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/Views/MenuBarDropZone.swift:107:17: error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+105 |             // For quick mode, we'll use a simplified approach
+106 |             // Analyze just this one file with context
+107 |             let contextPrompt = """
+    |                 `- error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+108 |             Quick organize this single file. Existing folders: \(existingFolders.joined(separator: ", ")).
+109 |             Choose the best existing folder OR suggest a new folder name.
+[53/65] Compiling FileOrganizerLib OrganizationResultView.swift
+/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/Views/MenuBarDropZone.swift:107:17: error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+105 |             // For quick mode, we'll use a simplified approach
+106 |             // Analyze just this one file with context
+107 |             let contextPrompt = """
+    |                 `- error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+108 |             Quick organize this single file. Existing folders: \(existingFolders.joined(separator: ", ")).
+109 |             Choose the best existing folder OR suggest a new folder name.
+[54/65] Compiling FileOrganizerLib OrganizeView.swift
+/Users/shirishpothi/Downloads/File Organiser/FileOrganizer/Views/MenuBarDropZone.swift:107:17: error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+105 |             // For quick mode, we'll use a simplified approach
+106 |             // Analyze just this one file with context
+107 |             let contextPrompt = """
+    |                 `- error: initialization of immutable value 'contextPrompt' was never used; consider replacing with assignment to '_' or removing it [#no-usage]
+108 |             Quick organize this single file. Existing folders: \(existingFolders.joined(separator: ", ")).
+109 |             Choose the best existing folder OR suggest a new folder name.
+[55/65] Compiling FileOrganizerLib PersonaPickerView.swift
+[56/65] Compiling FileOrganizerLib PreviewView.swift
+[57/65] Compiling FileOrganizerLib SettingsView.swift
+[58/65] Compiling FileOrganizerLib TimelineView.swift
+[59/65] Compiling FileOrganizerLib WatchedFoldersView.swift
+[60/65] Compiling FileOrganizerLib WorkspaceHealthView.swift
+error: fatalError
