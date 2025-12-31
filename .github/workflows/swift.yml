@@ -8,111 +8,84 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: macos-26
+    runs-on: macos-14
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "15.4"
+
       - name: Show environment info
         run: |
-          echo "=== macOS Version ==="
-          sw_vers
-          echo ""
           echo "=== Xcode Version ==="
           xcodebuild -version
           echo ""
-          echo "=== Xcode Path ==="
-          xcode-select -p
-          echo ""
           echo "=== Swift Version ==="
           swift --version
-          echo ""
-          echo "=== Available Xcode Versions ==="
-          ls -la /Applications/ | grep Xcode || true
           echo ""
           echo "=== Available SDKs ==="
           xcodebuild -showsdks
           echo ""
           echo "=== Project Schemes ==="
           xcodebuild -project "FileOrganiser.xcodeproj" -list
-          echo ""
-          echo "=== Available Destinations ==="
-          xcodebuild -showdestinations -project "FileOrganiser.xcodeproj" -scheme "FileOrganiser" 2>/dev/null | head -30 || true
 
       - name: Build the project
         run: |
-          echo "=== Starting Build ==="
           xcodebuild build \
             -project "FileOrganiser.xcodeproj" \
             -scheme "FileOrganiser" \
-            -destination 'platform=macOS,arch=arm64' \
+            -destination 'platform=macOS' \
             -configuration Debug \
-            -allowProvisioningUpdates \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
             DEVELOPMENT_TEAM="" \
+            MACOSX_DEPLOYMENT_TARGET=14.0 \
             SWIFT_TREAT_WARNINGS_AS_ERRORS=NO \
             GCC_TREAT_WARNINGS_AS_ERRORS=NO \
-            ONLY_ACTIVE_ARCH=YES \
             2>&1 | tee build_output.log
 
           BUILD_EXIT_CODE=${PIPESTATUS[0]}
-
-          echo ""
-          echo "=== Build Exit Code: $BUILD_EXIT_CODE ==="
-
           if [ $BUILD_EXIT_CODE -ne 0 ]; then
             echo ""
             echo "=== BUILD FAILED ==="
+            grep -E "(error:)" build_output.log | head -50 || true
             echo ""
-            echo "=== Errors and Warnings ==="
-            grep -E "(error:|warning:|fatal error|undefined|cannot find)" build_output.log | head -100 || true
-            echo ""
-            echo "=== Last 150 lines of build log ==="
-            tail -150 build_output.log
+            tail -100 build_output.log
             exit $BUILD_EXIT_CODE
           fi
-
           echo "✅ Build succeeded"
 
       - name: Run UI Tests
         run: |
-          echo "=== Starting UI Tests ==="
           xcodebuild test \
             -project "FileOrganiser.xcodeproj" \
             -scheme "FileOrganiser" \
-            -destination 'platform=macOS,arch=arm64' \
+            -destination 'platform=macOS' \
             -only-testing:FileOrganiserUITests \
             -resultBundlePath TestResults.xcresult \
-            -allowProvisioningUpdates \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
             DEVELOPMENT_TEAM="" \
+            MACOSX_DEPLOYMENT_TARGET=14.0 \
             SWIFT_TREAT_WARNINGS_AS_ERRORS=NO \
             GCC_TREAT_WARNINGS_AS_ERRORS=NO \
-            ONLY_ACTIVE_ARCH=YES \
             2>&1 | tee test_output.log
 
           TEST_EXIT_CODE=${PIPESTATUS[0]}
 
           echo ""
-          echo "=== Test Exit Code: $TEST_EXIT_CODE ==="
-          echo ""
           echo "=== Test Summary ==="
-          grep -E "(Test Suite|Test Case|Executed|passed|failed|error:)" test_output.log | tail -50 || true
+          grep -E "(Test Suite|Test Case|Executed|passed|failed)" test_output.log | tail -30 || true
 
           if [ $TEST_EXIT_CODE -ne 0 ]; then
             echo ""
             echo "=== TEST FAILURES ==="
-            grep -E "(failed|FAILED|error:)" test_output.log | head -50 || true
-            echo ""
-            echo "=== Last 100 lines of test log ==="
-            tail -100 test_output.log
+            grep -E "(failed|error:)" test_output.log | head -30 || true
             exit $TEST_EXIT_CODE
           fi
-
           echo "✅ UI Tests passed!"
         timeout-minutes: 30
 
