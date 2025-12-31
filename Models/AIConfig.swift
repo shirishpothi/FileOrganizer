@@ -68,6 +68,7 @@ public struct AIConfig: Codable, Sendable {
     // Deep Scanning & Duplicate Detection
     public var enableDeepScan: Bool   // Analyze file content (PDF text, EXIF, etc.)
     public var detectDuplicates: Bool // Find duplicate files by hash
+    public var showStatsForNerds: Bool // Show detailed stats about generation
     
     public init(
         provider: AIProvider = .openAICompatible,
@@ -83,7 +84,8 @@ public struct AIConfig: Codable, Sendable {
         requiresAPIKey: Bool = true,
         enableReasoning: Bool = false,
         enableDeepScan: Bool = false,
-        detectDuplicates: Bool = false
+        detectDuplicates: Bool = false,
+        showStatsForNerds: Bool = false
     ) {
         self.provider = provider
         self.apiURL = apiURL
@@ -99,6 +101,7 @@ public struct AIConfig: Codable, Sendable {
         self.enableReasoning = enableReasoning
         self.enableDeepScan = enableDeepScan
         self.detectDuplicates = detectDuplicates
+        self.showStatsForNerds = showStatsForNerds
     }
     
     public static let `default` = AIConfig(
@@ -114,7 +117,8 @@ public struct AIConfig: Codable, Sendable {
         requiresAPIKey: true,
         enableReasoning: false,
         enableDeepScan: false,
-        detectDuplicates: false
+        detectDuplicates: false,
+        showStatsForNerds: false
     )
 }
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 public enum PersonaType: String, Codable, CaseIterable, Sendable {
     case general = "general"

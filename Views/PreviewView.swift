@@ -12,6 +12,7 @@ struct PreviewView: View {
     let plan: OrganizationPlan
     let baseURL: URL
     @EnvironmentObject var organizer: FolderOrganizer
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     @StateObject private var previewManager = PreviewManager()
     @StateObject private var dragDropManager = DragDropManager()
     @State private var showApplyConfirmation = false
@@ -81,7 +82,13 @@ struct PreviewView: View {
             .padding()
             .background(Color(NSColor.controlBackgroundColor))
 
-            // Tree view with drag-drop support
+            // Stats for Nerds
+            if settingsViewModel.config.showStatsForNerds, let stats = editablePlan.generationStats {
+                GenerationStatsView(stats: stats)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+            
+            Divider()
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     ForEach(editablePlan.suggestions) { suggestion in

@@ -77,8 +77,9 @@ struct AnalysisView: View {
                     .fontWeight(.semibold)
                     .monospacedDigit()
                     .scaleEffect(pulseScale)
+                    .scaleEffect(pulseScale)
                     .onAppear {
-                        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
                             pulseScale = 1.05
                         }
                     }
@@ -105,12 +106,12 @@ struct AnalysisView: View {
                 }
                 .onAppear {
                     // Subtle rotation for scanning
-                    withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
-                        rotationAngle = 15
+                    withAnimation(.easeInOut(duration: 2.5).repeatForever(autoreverses: true)) {
+                        rotationAngle = 10
                     }
                     // Bounce effect
-                    withAnimation(.spring(response: 0.5, dampingFraction: 0.5).repeatForever(autoreverses: true)) {
-                        stageIconBounce = -5
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.9).repeatForever(autoreverses: true)) {
+                        stageIconBounce = -3
                     }
                 }
 
@@ -210,7 +211,7 @@ struct AnalysisView: View {
             // Cancel button with haptic feedback
             Button("Cancel") {
                 HapticFeedbackManager.shared.tap()
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
                     organizer.reset()
                 }
             }
@@ -279,12 +280,12 @@ struct AnimatedProgressRing: View {
                 .rotationEffect(.degrees(-90))
         }
         .onChange(of: progress) { oldValue, newValue in
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.95)) {
                 animatedProgress = newValue
             }
         }
         .onAppear {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.95)) {
                 animatedProgress = progress
             }
         }

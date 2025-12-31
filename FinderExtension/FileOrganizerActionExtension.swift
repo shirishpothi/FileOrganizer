@@ -57,9 +57,9 @@ class FileOrganizerActionExtension: FIFinderSync {
             NSWorkspace.shared.open([selectedURL], withApplicationAt: appURL, configuration: NSWorkspace.OpenConfiguration())
         } else {
             // Fallback: try to open the app bundle
-            if let bundleURL = Bundle.main.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent() {
-                NSWorkspace.shared.open(bundleURL)
-            }
+            // Fallback: try to open the app bundle
+            let bundleURL = Bundle.main.bundleURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            NSWorkspace.shared.open(bundleURL)
         }
     }
 }

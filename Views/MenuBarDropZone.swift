@@ -8,6 +8,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import Combine
 
 // MARK: - Menu Bar Controller
 

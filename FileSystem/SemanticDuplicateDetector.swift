@@ -8,6 +8,7 @@
 
 import Foundation
 import CryptoKit
+import Combine
 
 /// Represents a group of semantically similar files (near-duplicates)
 public struct SemanticDuplicateGroup: Identifiable, Sendable {

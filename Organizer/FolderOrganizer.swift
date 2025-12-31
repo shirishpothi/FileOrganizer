@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 public enum OrganizationState: Equatable, Sendable {
     case idle

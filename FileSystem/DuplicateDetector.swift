@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoKit
+import Combine
 
 /// Group of files with identical content
 public struct DuplicateGroup: Identifiable, Hashable, Sendable {

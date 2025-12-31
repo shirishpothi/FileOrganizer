@@ -21,6 +21,7 @@ public struct OrganizationPlan: Codable, Identifiable, Hashable, Sendable {
     public var notes: String
     public var timestamp: Date
     public var version: Int
+    public var generationStats: GenerationStats?
     
     public init(
         id: UUID = UUID(),
@@ -29,7 +30,8 @@ public struct OrganizationPlan: Codable, Identifiable, Hashable, Sendable {
         unorganizedDetails: [UnorganizedFile] = [],
         notes: String = "",
         timestamp: Date = Date(),
-        version: Int = 1
+        version: Int = 1,
+        generationStats: GenerationStats? = nil
     ) {
         self.id = id
         self.suggestions = suggestions
@@ -38,6 +40,7 @@ public struct OrganizationPlan: Codable, Identifiable, Hashable, Sendable {
         self.notes = notes
         self.timestamp = timestamp
         self.version = version
+        self.generationStats = generationStats
     }
     
     public var totalFiles: Int {

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import Combine
 
 /// Delegate for handling file drops between folders in PreviewView
 struct FileDropDelegate: DropDelegate {

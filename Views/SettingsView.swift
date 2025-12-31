@@ -195,7 +195,8 @@ struct SettingsView: View {
                             }
                         }
                         .animatedAppearance(delay: 0.25)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: testConnectionStatus)
+                        .animatedAppearance(delay: 0.25) // Keeping appearance animation but making it subtle in AnimatedModifier if needed
+                        .animation(.easeInOut(duration: 0.2), value: testConnectionStatus)
 
                         // Advanced Settings (Collapsible)
                         Section {
@@ -330,9 +331,20 @@ struct SettingsView: View {
                             .onChange(of: showingAdvanced) { oldValue, newValue in
                                 HapticFeedbackManager.shared.tap()
                             }
+                            
+                            Divider()
+                            
+                            AnimatedToggle(isOn: $viewModel.config.showStatsForNerds) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Stats for Nerds")
+                                    Text("Show detailed generation metrics (tokens/sec, time to first token)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
                         .animatedAppearance(delay: 0.3)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showingAdvanced)
+                        .animation(.easeInOut(duration: 0.25), value: showingAdvanced)
 
                         // Watched Folders (Smart Automations)
                         Section {
@@ -381,7 +393,7 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .opacity(contentOpacity)
             .onAppear {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                withAnimation(.easeOut(duration: 0.3)) {
                     contentOpacity = 1.0
                 }
             }
@@ -426,11 +438,11 @@ struct AnimatedToggle<Label: View>: View {
         .scaleEffect(toggleScale)
         .onChange(of: isOn) { oldValue, newValue in
             HapticFeedbackManager.shared.selection()
-            withAnimation(.spring(response: 0.2, dampingFraction: 0.5)) {
-                toggleScale = 1.02
+            withAnimation(.easeInOut(duration: 0.15)) {
+                toggleScale = 1.05
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                withAnimation(.easeInOut(duration: 0.15)) {
                     toggleScale = 1.0
                 }
             }

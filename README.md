@@ -6,6 +6,18 @@
 
 A native macOS SwiftUI application that uses AI to intelligently organize directory contents into relevant, semantically-named folders.
 
+## 📸 Preview
+
+<p align="center">
+  <img width="1348" alt="A preview of the mid-generation UI, with streaming enabled" src="https://share.cleanshot.com/YPzjGbh5" />
+  <br><i>Streaming AI responses in real-time</i><br><br>
+  <img width="1348" alt="Setting View" src="https://share.cleanshot.com/JdYKL7HH" />
+  <br><i>Advanced settings with Stats for Nerds</i><br><br>
+  <img width="1348" alt="A preview of the post-organisation UI" src="https://share.cleanshot.com/QmDQfqz6" />
+  <br><i>Interactive organization preview</i>
+</p>
+
+
 ## ✨ Features
 
 - 🤖 **Intelligent Organization**: Uses AI to understand file content and context for accurate categorization.

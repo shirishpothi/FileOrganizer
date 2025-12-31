@@ -8,6 +8,7 @@
 
 import SwiftUI
 import Charts
+import UniformTypeIdentifiers
 
 struct WorkspaceHealthView: View {
     @EnvironmentObject var organizer: FolderOrganizer
@@ -146,6 +147,7 @@ struct HeaderSection: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(isAnalyzing)
+            .accessibilityIdentifier("AnalyzeFolderButton")
         }
         .padding()
         .background(
@@ -267,6 +269,7 @@ struct InsightsSection: View {
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .accessibilityIdentifier("ClearInsightsButton")
                 }
             }
 
@@ -502,6 +505,7 @@ struct GrowthChartsSection: View {
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 300)
+                .accessibilityIdentifier("GrowthPeriodPicker")
             }
 
             // Show chart for each tracked directory

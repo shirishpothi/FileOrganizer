@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 public struct WatchedFolder: Codable, Identifiable, Hashable, Sendable {
     public let id: UUID

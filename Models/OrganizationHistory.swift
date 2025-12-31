@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 public enum OrganizationStatus: String, Codable, Sendable {
     case completed

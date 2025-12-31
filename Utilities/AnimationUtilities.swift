@@ -85,22 +85,22 @@ public enum PageTransitionStyle {
 extension Animation {
     /// Smooth spring animation for page transitions
     public static var pageTransition: Animation {
-        .spring(response: 0.35, dampingFraction: 0.85, blendDuration: 0.1)
+        .spring(response: 0.35, dampingFraction: 1.0, blendDuration: 0.1)
     }
 
     /// Bouncy spring animation for modals and sheets
     public static var modalBounce: Animation {
-        .spring(response: 0.4, dampingFraction: 0.7, blendDuration: 0.1)
+        .spring(response: 0.35, dampingFraction: 0.9, blendDuration: 0.1)
     }
 
     /// Subtle bounce for interactive elements
     public static var subtleBounce: Animation {
-        .spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0)
+        .spring(response: 0.3, dampingFraction: 0.9, blendDuration: 0)
     }
 
     /// Quick snap animation for selections
     public static var quickSnap: Animation {
-        .spring(response: 0.25, dampingFraction: 0.8, blendDuration: 0)
+        .spring(response: 0.25, dampingFraction: 1.0, blendDuration: 0)
     }
 
     /// Loading pulse animation
@@ -293,7 +293,7 @@ struct AnimatedAppearanceModifier: ViewModifier {
             .offset(y: appeared ? 0 : 20)
             .opacity(appeared ? 1 : 0)
             .onAppear {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8).delay(delay)) {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.95).delay(delay)) {
                     appeared = true
                 }
             }
@@ -384,7 +384,7 @@ public struct LoadingDotsView: View {
 
     private func startAnimation() {
         Timer.scheduledTimer(withTimeInterval: 0.3, repeats: true) { timer in
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
                 animatingDot = (animatingDot + 1) % dotCount
             }
         }

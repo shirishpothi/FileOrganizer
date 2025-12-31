@@ -127,7 +127,10 @@ final class OpenAIClient: AIClientProtocol, @unchecked Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: streamingRequestBody)
         
+        let startTime = Date()
+        var firstTokenTime: Date?
         var accumulatedContent = ""
+        var tokenCountEstimate = 0
         
         do {
             let (bytes, response) = try await session.bytes(for: request)
@@ -164,7 +167,12 @@ final class OpenAIClient: AIClientProtocol, @unchecked Sendable {
                        let delta = firstChoice["delta"] as? [String: Any],
                        let content = delta["content"] as? String {
                         
+                        if firstTokenTime == nil {
+                            firstTokenTime = Date()
+                        }
+                        
                         accumulatedContent += content
+                        tokenCountEstimate += 1 // Roughly counting chunks as tokens for now, or use chars/4 later
                         
                         // Notify delegate about the new chunk
                         let chunk = content
@@ -175,13 +183,31 @@ final class OpenAIClient: AIClientProtocol, @unchecked Sendable {
                 }
             }
             
+            let endTime = Date()
+            let duration = endTime.timeIntervalSince(startTime)
+            let ttft = firstTokenTime?.timeIntervalSince(startTime) ?? duration
+            
+            // improved token estimation: ~4 chars per token
+            let estimatedTokens = accumulatedContent.count / 4
+            let tps = duration > 0 ? Double(estimatedTokens) / duration : 0
+            
+            let stats = GenerationStats(
+                duration: duration,
+                tps: tps,
+                ttft: ttft,
+                totalTokens: estimatedTokens,
+                model: config.model
+            )
+            
             // Notify completion
             let finalContent = accumulatedContent
             await MainActor.run {
                 streamingDelegate?.didComplete(content: finalContent)
             }
             
-            return try ResponseParser.parseResponse(accumulatedContent, originalFiles: files)
+            var plan = try ResponseParser.parseResponse(accumulatedContent, originalFiles: files)
+            plan.generationStats = stats
+            return plan
             
         } catch let error as AIClientError {
             await MainActor.run {
