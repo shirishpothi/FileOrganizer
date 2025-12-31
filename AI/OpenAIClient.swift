@@ -7,14 +7,6 @@
 
 import Foundation
 
-/// Delegate protocol for streaming updates
-@MainActor
-protocol StreamingDelegate: AnyObject {
-    func didReceiveChunk(_ chunk: String)
-    func didComplete(content: String)
-    func didFail(error: Error)
-}
-
 final class OpenAIClient: AIClientProtocol, @unchecked Sendable {
     let config: AIConfig
     private let session: URLSession
@@ -234,4 +226,5 @@ enum AIClientError: LocalizedError, Sendable {
         }
     }
 }
+
 

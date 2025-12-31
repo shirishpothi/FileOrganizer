@@ -195,6 +195,7 @@ struct WatchedFolderRow: View {
 struct WatchedFolderConfigView: View {
     let folder: WatchedFolder
     @EnvironmentObject var watchedFoldersManager: WatchedFoldersManager
+    @EnvironmentObject var appState: AppState // To access coordinator/organizer if needed
     @Environment(\.dismiss) var dismiss
     
     @State private var customPrompt: String
@@ -210,37 +211,117 @@ struct WatchedFolderConfigView: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Organization Strategy") {
-                    Toggle("Auto-Organize", isOn: $autoOrganize)
-                    Text("Automatically organize files when changes are detected.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            ZStack {
+                Color(NSColor.windowBackgroundColor).ignoresSafeArea()
                 
-                Section("Custom Instructions") {
-                    TextEditor(text: $customPrompt)
-                        .font(.system(.body, design: .monospaced))
-                        .frame(height: 100)
-                    Text("Overrides generic instructions for this folder only.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                
-                Section("Creativity (Temperature)") {
-                    HStack {
-                        Text("Focused")
-                            .font(.caption)
-                        Slider(value: $temperature, in: 0...1)
-                        Text("Creative")
-                            .font(.caption)
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Liquid Glass Card for Strategy
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Strategy")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                            
+                            Toggle(isOn: $autoOrganize) {
+                                VStack(alignment: .leading) {
+                                    Text("Auto-Organize")
+                                        .font(.headline)
+                                    Text("Smart Drop: Only moves new files into existing folders")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .toggleStyle(.switch)
+                        }
+                        .padding(20)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
+                        
+                        // Custom Instructions
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Instructions")
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                            
+                            TextEditor(text: $customPrompt)
+                                .font(.system(.body, design: .monospaced))
+                                .frame(height: 100)
+                                .scrollContentBackground(.hidden)
+                                .padding(12)
+                                .background(Color(NSColor.controlBackgroundColor))
+                                .cornerRadius(8)
+                            
+                            Text("Overrides generic instructions for this folder.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(20)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
+                        
+                        // Temperature
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack {
+                                Text("Creativity")
+                                    .font(.headline)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text(String(format: "%.1f", temperature))
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.blue)
+                            }
+                            
+                            Slider(value: $temperature, in: 0...1) {
+                                Text("Temperature")
+                            } minimumValueLabel: {
+                                Text("Focused").font(.caption)
+                            } maximumValueLabel: {
+                                Text("Creative").font(.caption)
+                            }
+                        }
+                        .padding(20)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
+                        
+                        // Calibrate Action
+                        VStack(alignment: .leading, spacing: 16) {
+                             Text("Maintenance")
+                                 .font(.headline)
+                                 .foregroundStyle(.secondary)
+                             
+                            Button {
+                                appState.calibrateAction?(folder)
+                                dismiss()
+                            } label: {
+                                HStack {
+                                    Image(systemName: "tuningfork")
+                                    Text("Calibrate Folder")
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding()
+                                .background(Color(NSColor.controlBackgroundColor))
+                                .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                            
+                            Text("Runs a full organization to set the baseline structure.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(20)
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
                     }
-                    Text("Current: \(temperature, specifier: "%.2f")")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    .padding()
                 }
             }
-            .formStyle(.grouped)
             .navigationTitle(folder.name)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

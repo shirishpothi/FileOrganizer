@@ -16,6 +16,7 @@ import FoundationModels
 @available(macOS 26.0, *)
 final class AppleFoundationModelClient: AIClientProtocol, @unchecked Sendable {
     let config: AIConfig
+    @MainActor weak var streamingDelegate: StreamingDelegate?
     
     init(config: AIConfig) {
         self.config = config
@@ -43,6 +44,27 @@ final class AppleFoundationModelClient: AIClientProtocol, @unchecked Sendable {
             // Generate response from the model
             let response = try await session.respond(to: userPrompt)
             let content = response.content
+            
+            // Simulate streaming for UI feedback since this API might be synchronous
+            let chunkSize = 20
+            var currentIndex = content.startIndex
+            
+            while currentIndex < content.endIndex {
+                let nextIndex = content.index(currentIndex, offsetBy: chunkSize, limitedBy: content.endIndex) ?? content.endIndex
+                let chunk = String(content[currentIndex..<nextIndex])
+                
+                await MainActor.run {
+                    streamingDelegate?.didReceiveChunk(chunk)
+                }
+                
+                // minimal delay to allow UI updates
+                try? await Task.sleep(nanoseconds: 5_000_000) 
+                currentIndex = nextIndex
+            }
+            
+            await MainActor.run {
+                streamingDelegate?.didComplete(content: content)
+            }
             
             // Parse the response into an OrganizationPlan
             return try ResponseParser.parseResponse(content, originalFiles: files)

@@ -14,7 +14,7 @@ struct HistoryView: View {
     @State private var alertMessage: String?
     @State private var showAlert = false
     @State private var selectedFilter: HistoryFilter = .all
-    
+
     private var filteredEntries: [OrganizationHistoryEntry] {
         switch selectedFilter {
         case .all: return organizer.history.entries
@@ -23,16 +23,16 @@ struct HistoryView: View {
         case .skipped: return organizer.history.entries.filter { $0.status == .skipped || $0.status == .cancelled }
         }
     }
-    
+
     enum HistoryFilter: String, CaseIterable, Identifiable {
         case all = "All"
         case success = "Success"
         case failed = "Failed"
         case skipped = "Skipped"
-        
+
         var id: String { rawValue }
     }
-    
+
     var body: some View {
         HStack(spacing: 0) {
             // Internal Sidebar (Sessions List)
@@ -51,50 +51,50 @@ struct HistoryView: View {
                     // Quick Stats - 4 Cards
                     VStack(alignment: .leading, spacing: 12) {
                         Text("DASHBOARD")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(.secondary)
-                            .tracking(1)
-                        
-                        VStack(spacing: 8) {
-                            HStack(spacing: 8) {
-                                StatCard(title: "Sessions", value: "\(organizer.history.totalSessions)", icon: "list.bullet.rectangle", color: .gray)
-                                StatCard(title: "Files", value: "\(organizer.history.totalFilesOrganized)", icon: "doc.on.doc", color: .blue)
-                            }
-                            HStack(spacing: 8) {
-                                StatCard(title: "Folders", value: "\(organizer.history.totalFoldersCreated)", icon: "folder.fill.badge.plus", color: .purple)
-                                StatCard(title: "Reverted", value: "\(organizer.history.revertedCount)", icon: "arrow.uturn.backward", color: .orange)
-                            }
+                            .tracking(1.2)
+
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                            HistoryStatCard(title: "Sessions", value: "\(organizer.history.totalSessions)", icon: "list.bullet.rectangle", color: .gray)
+                            HistoryStatCard(title: "Files", value: "\(organizer.history.totalFilesOrganized)", icon: "doc.on.doc", color: .blue)
+                            HistoryStatCard(title: "Folders", value: "\(organizer.history.totalFoldersCreated)", icon: "folder.fill.badge.plus", color: .purple)
+                            HistoryStatCard(title: "Reverted", value: "\(organizer.history.revertedCount)", icon: "arrow.uturn.backward", color: .orange)
                         }
                     }
-                    .padding(16)
-                    .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-                    
+                    .padding(20)
+                    .background(Color(NSColor.controlBackgroundColor))
+
                     Divider()
-                    
+
+                    Divider()
+
                     // Filter Bar
-                    Picker("Filter", selection: $selectedFilter) {
-                        ForEach(HistoryFilter.allCases) { filter in
-                            Text(filter.rawValue).tag(filter)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 8)
-                    .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
-                    
+                    LiquidDropdown(options: HistoryFilter.allCases, selection: $selectedFilter, title: "Show:")
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(Color(NSColor.controlBackgroundColor))
+
                     List(filteredEntries, selection: $selectedEntry) { entry in
                         HistoryEntryRow(entry: entry)
                             .tag(entry)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .padding(.vertical, 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(selectedEntry == entry ? Color.accentColor.opacity(0.1) : Color.clear)
+                            )
                     }
-                    .listStyle(.inset)
+                    .listStyle(.plain)
+                    .padding(.top, 8)
                 }
             }
             .frame(width: 400) // Increased width per user request
             .background(Color(NSColor.windowBackgroundColor))
-            
+
             Divider()
-            
+
             // Detail Area
             Group {
                 if let entry = selectedEntry {
@@ -141,7 +141,7 @@ struct HistoryView: View {
 
 struct HistoryEntryRow: View {
     let entry: OrganizationHistoryEntry
-    
+
     private var statusColor: Color {
         switch entry.status {
         case .completed: return .green
@@ -151,7 +151,7 @@ struct HistoryEntryRow: View {
         case .undo: return .orange
         }
     }
-    
+
     private var statusIcon: String {
         switch entry.status {
         case .completed: return "checkmark"
@@ -161,25 +161,25 @@ struct HistoryEntryRow: View {
         case .undo: return "arrow.uturn.backward"
         }
     }
-    
+
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
                     .fill(statusColor.opacity(0.1))
                     .frame(width: 32, height: 32)
-                
+
                 Image(systemName: statusIcon)
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(statusColor)
             }
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(URL(fileURLWithPath: entry.directoryPath).lastPathComponent)
                     .font(.system(size: 14, weight: .semibold))
                     .strikethrough(entry.status == .undo)
                     .lineLimit(1)
-                
+
                 HStack(spacing: 12) {
                     if entry.status == .completed {
                         Label("\(entry.filesOrganized) files", systemImage: "doc")
@@ -209,9 +209,9 @@ struct HistoryDetailView: View {
     @Binding var isProcessing: Bool
     let onAction: (String) -> Void
     @State private var showRawAIResponse = false
-    
+
     @EnvironmentObject var organizer: FolderOrganizer
-    
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
@@ -229,7 +229,7 @@ struct HistoryDetailView: View {
                         Spacer()
                         StatusBadge(status: entry.status)
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 8) {
                         Label(entry.directoryPath, systemImage: "folder")
                             .font(.system(.body, design: .monospaced))
@@ -239,7 +239,7 @@ struct HistoryDetailView: View {
                             .cornerRadius(6)
                     }
                 }
-                
+
                 // Summary Stats in Detail
                 if entry.success {
                     HStack(spacing: 20) {
@@ -250,13 +250,13 @@ struct HistoryDetailView: View {
                         }
                     }
                 }
-                
+
                 // Actions
                 if entry.success {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Session Management")
                             .font(.headline)
-                        
+
                         HStack(spacing: 12) {
                             if entry.isUndone {
                                 Button(action: handleRedo) {
@@ -272,7 +272,7 @@ struct HistoryDetailView: View {
                                 }
                                 .buttonStyle(.bordered)
                                 .controlSize(.large)
-                                
+
                                 Button(action: handleRestore) {
                                     Label("Restore Folder to this State", systemImage: "clock.arrow.circlepath")
                                         .frame(minWidth: 150)
@@ -283,7 +283,7 @@ struct HistoryDetailView: View {
                         }
                     }
                 }
-                
+
                 // Timeline Section
                 if entry.success {
                     CompactTimelineView(
@@ -291,7 +291,7 @@ struct HistoryDetailView: View {
                         directoryPath: entry.directoryPath
                     )
                 }
-                
+
                 if !entry.success, let error = entry.errorMessage {
                     SectionView(title: "Error Log", icon: "exclamationmark.triangle.fill", color: .red) {
                         Text(error)
@@ -303,7 +303,7 @@ struct HistoryDetailView: View {
                             .cornerRadius(8)
                     }
                 }
-                
+
                 // Expanded Plan List with reasoning and files
                 if let plan = entry.plan {
                     SectionView(title: "Organization Details", icon: "list.bullet.indent", color: .blue) {
@@ -311,14 +311,14 @@ struct HistoryDetailView: View {
                             ForEach(plan.suggestions) { suggestion in
                                 FolderHistoryDetailRow(suggestion: suggestion)
                             }
-                            
+
                             if !plan.unorganizedFiles.isEmpty {
                                 VStack(alignment: .leading, spacing: 12) {
                                     Text("Unorganized Files")
                                         .font(.subheadline)
                                         .fontWeight(.bold)
                                         .foregroundColor(.orange)
-                                    
+
                                     VStack(alignment: .leading, spacing: 6) {
                                         ForEach(plan.unorganizedFiles) { fileItem in
                                             HStack {
@@ -338,7 +338,7 @@ struct HistoryDetailView: View {
                         }
                     }
                 }
-                
+
                 // Raw AI Data (New per user request)
                 if let raw = entry.rawAIResponse {
                     DisclosureGroup("View Raw AI Response Data", isExpanded: $showRawAIResponse) {
@@ -356,28 +356,28 @@ struct HistoryDetailView: View {
             .padding(40)
         }
     }
-    
+
     private func handleUndo() {
         processAction {
             try await organizer.undoHistoryEntry(entry)
             onAction("Operations reversed successfully.")
         }
     }
-    
+
     private func handleRestore() {
         processAction {
             try await organizer.restoreToState(targetEntry: entry)
             onAction("Folder state restored.")
         }
     }
-    
+
     private func handleRedo() {
         processAction {
             try await organizer.redoOrganization(from: entry)
             onAction("Organization re-applied.")
         }
     }
-    
+
     private func processAction(_ action: @escaping () async throws -> Void) {
         isProcessing = true
         Task {
@@ -397,7 +397,7 @@ struct DetailStatView: View {
     let value: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
@@ -417,12 +417,12 @@ struct DetailStatView: View {
     }
 }
 
-struct StatCard: View {
+struct HistoryStatCard: View {
     let title: String
     let value: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
         HStack(spacing: 8) {
             ZStack {
@@ -433,7 +433,7 @@ struct StatCard: View {
                     .font(.system(size: 12))
                     .foregroundStyle(color)
             }
-            
+
             VStack(alignment: .leading, spacing: 0) {
                 Text(value)
                     .font(.system(size: 14, weight: .bold))
@@ -451,7 +451,7 @@ struct StatCard: View {
 
 struct StatusBadge: View {
     let status: OrganizationStatus
-    
+
     private var color: Color {
         switch status {
         case .completed: return .green
@@ -461,7 +461,7 @@ struct StatusBadge: View {
         case .undo: return .orange
         }
     }
-    
+
     var body: some View {
         Text(status.rawValue.uppercased())
             .font(.system(size: 12, weight: .bold))
@@ -478,7 +478,7 @@ struct SectionView<Content: View>: View {
     let icon: String
     let color: Color
     @ViewBuilder let content: () -> Content
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Label(title, systemImage: icon)
@@ -492,7 +492,7 @@ struct SectionView<Content: View>: View {
 struct FolderHistoryDetailRow: View {
     let suggestion: FolderSuggestion
     @State private var isExpanded = false
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Button {
@@ -502,22 +502,22 @@ struct FolderHistoryDetailRow: View {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    
+
                     Image(systemName: "folder.fill")
                         .foregroundColor(.blue)
-                    
+
                     Text(suggestion.folderName)
                         .fontWeight(.semibold)
-                    
+
                     Text("(\(suggestion.totalFileCount) files)")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    
+
                     Spacer()
                 }
             }
             .buttonStyle(.plain)
-            
+
             if isExpanded {
                 VStack(alignment: .leading, spacing: 12) {
                     if !suggestion.reasoning.isEmpty {
@@ -533,7 +533,7 @@ struct FolderHistoryDetailRow: View {
                                 .cornerRadius(6)
                         }
                     }
-                    
+
                     // Files
                     VStack(alignment: .leading, spacing: 4) {
                         ForEach(suggestion.files) { fileItem in
@@ -549,7 +549,7 @@ struct FolderHistoryDetailRow: View {
                             .padding(.leading, 12)
                         }
                     }
-                    
+
                     // Subfolders
                     ForEach(suggestion.subfolders) { subfolder in
                         FolderHistoryDetailRow(suggestion: subfolder)

@@ -45,6 +45,7 @@ struct OrganizeView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(NSColor.windowBackgroundColor))
                 }
             }
         }
@@ -72,10 +73,12 @@ struct OrganizeView: View {
     }
     
     private func configureOrganizer() {
-        do {
-            try organizer.configure(with: settingsViewModel.config)
-        } catch {
-            organizer.state = .error(error)
+        Task {
+            do {
+                try await organizer.configure(with: settingsViewModel.config)
+            } catch {
+                organizer.state = .error(error)
+            }
         }
     }
     

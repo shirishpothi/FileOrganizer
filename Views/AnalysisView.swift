@@ -115,6 +115,7 @@ struct AnalysisView: View {
             .buttonStyle(.bordered)
             .keyboardShortcut(.escape, modifiers: [])
         }
+        .background(Color(NSColor.windowBackgroundColor))
     }
     
     private var truncatedStreamContent: String {
@@ -135,4 +136,5 @@ struct AnalysisView: View {
         return "\(seconds)s"
     }
 }
+
 

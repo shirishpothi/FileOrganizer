@@ -176,6 +176,7 @@ struct PreviewView: View {
             hasEdits = false
         }
         .environmentObject(dragDropManager)
+        .background(Color(NSColor.windowBackgroundColor))
     }
     
     private func regeneratePreview() {

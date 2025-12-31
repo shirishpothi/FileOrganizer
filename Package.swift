@@ -28,9 +28,11 @@ let package = Package(
                 "README.md",
                 "AppCoordinator.swift",
                 "Info.plist",
+                "FileOrganizer.app",
                 ".git",
                 ".gitignore"
             ],
+
             sources: [
                 "AI",
                 "FileSystem",
@@ -55,9 +57,11 @@ let package = Package(
                 "Makefile",
                 "README.md",
                 "Info.plist",
+                "FileOrganizer.app",
                 ".git",
                 ".gitignore"
             ],
+
             sources: [
                 "FileOrganizerApp.swift",
                 "AppCoordinator.swift"

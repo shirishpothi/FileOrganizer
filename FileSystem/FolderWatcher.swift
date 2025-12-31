@@ -22,10 +22,31 @@ public final class FolderWatcher: @unchecked Sendable {
     private var debounceTimers: [UUID: DispatchWorkItem] = [:]
     private let queue = DispatchQueue(label: "com.fileorganizer.folderwatcher", qos: .utility)
     
+    private var pausedFolders: Set<UUID> = []
+    private var folderSnapshots: [UUID: Set<String>] = [:]
+    private let fileManager = FileManager.default
+    
     public init() {}
     
     deinit {
         stopAllWatching()
+    }
+    
+    /// Pause watching for a specific folder (prevent aut-trigger loops)
+    public func pause(_ folder: WatchedFolder) {
+        pausedFolders.insert(folder.id)
+    }
+    
+    /// Resume watching
+    public func resume(_ folder: WatchedFolder) {
+        pausedFolders.remove(folder.id)
+        // Update snapshot to current state to avoid triggering on changes we just made
+        updateSnapshot(for: folder)
+    }
+    
+    private func updateSnapshot(for folder: WatchedFolder) {
+        let contents = (try? fileManager.contentsOfDirectory(atPath: folder.path)) ?? []
+        folderSnapshots[folder.id] = Set(contents)
     }
     
     /// Start watching a folder for changes
@@ -34,6 +55,9 @@ public final class FolderWatcher: @unchecked Sendable {
         
         // Stop existing watcher for this folder if any
         stopWatching(folder)
+        
+        // Take initial snapshot
+        updateSnapshot(for: folder)
         
         let path = folder.path
         let fd = open(path, O_EVTONLY)
@@ -83,6 +107,9 @@ public final class FolderWatcher: @unchecked Sendable {
             source.cancel()
             sources.removeValue(forKey: id)
         }
+        
+        folderSnapshots.removeValue(forKey: id)
+        pausedFolders.remove(id)
     }
     
     /// Stop watching all folders
@@ -118,6 +145,10 @@ public final class FolderWatcher: @unchecked Sendable {
     
     private func handleEvent(for folder: WatchedFolder) {
         guard folder.autoOrganize else { return }
+        guard !pausedFolders.contains(folder.id) else {
+            DebugLogger.log("Watcher paused for \(folder.name), ignoring event")
+            return
+        }
         
         // Debounce: cancel previous timer and start new one
         debounceTimers[folder.id]?.cancel()
@@ -126,6 +157,27 @@ public final class FolderWatcher: @unchecked Sendable {
         
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
+            
+            // Re-check pause state (might have paused during debounce)
+            guard !self.pausedFolders.contains(folder.id) else { return }
+            
+            // Diffing Logic
+            let currentContents = (try? self.fileManager.contentsOfDirectory(atPath: folder.path)) ?? []
+            let currentSet = Set(currentContents)
+            let previousSet = self.folderSnapshots[folder.id] ?? []
+            
+            let newFiles = currentSet.subtracting(previousSet)
+            
+            // Update snapshot
+            self.folderSnapshots[folder.id] = currentSet
+            
+            guard !newFiles.isEmpty else {
+                DebugLogger.log("No new files detected in \(folder.name)")
+                return
+            }
+            
+            DebugLogger.log("New files detected: \(newFiles)")
+            
             Task { @MainActor in
                 self.delegate?.folderWatcher(self, didDetectChangesIn: folder)
             }

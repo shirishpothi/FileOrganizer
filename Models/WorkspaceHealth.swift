@@ -1,0 +1,696 @@
+//
+//  WorkspaceHealth.swift
+//  FileOrganizer
+//
+//  Automated Workspace Health Insights
+//  Tracks clutter growth and cleanup opportunities over time
+//
+
+import Foundation
+import SwiftUI
+import Combine
+
+// MARK: - Data Models
+
+/// Snapshot of a directory's state at a point in time
+public struct DirectorySnapshot: Codable, Identifiable, Sendable {
+    public let id: UUID
+    public let directoryPath: String
+    public let timestamp: Date
+    public let totalFiles: Int
+    public let totalSize: Int64
+    public let filesByExtension: [String: Int]
+    public let unorganizedCount: Int
+    public let averageFileAge: TimeInterval // Days since creation
+
+    public init(
+        id: UUID = UUID(),
+        directoryPath: String,
+        timestamp: Date = Date(),
+        totalFiles: Int,
+        totalSize: Int64,
+        filesByExtension: [String: Int] = [:],
+        unorganizedCount: Int = 0,
+        averageFileAge: TimeInterval = 0
+    ) {
+        self.id = id
+        self.directoryPath = directoryPath
+        self.timestamp = timestamp
+        self.totalFiles = totalFiles
+        self.totalSize = totalSize
+        self.filesByExtension = filesByExtension
+        self.unorganizedCount = unorganizedCount
+        self.averageFileAge = averageFileAge
+    }
+
+    public var formattedSize: String {
+        ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
+    }
+
+    public var formattedAverageAge: String {
+        let days = Int(averageFileAge / 86400)
+        if days == 0 {
+            return "< 1 day"
+        } else if days == 1 {
+            return "1 day"
+        } else if days < 30 {
+            return "\(days) days"
+        } else if days < 365 {
+            let months = days / 30
+            return "\(months) month\(months == 1 ? "" : "s")"
+        } else {
+            let years = days / 365
+            return "\(years) year\(years == 1 ? "" : "s")"
+        }
+    }
+}
+
+/// Represents growth/change between two snapshots
+public struct DirectoryGrowth: Sendable {
+    public let previousSnapshot: DirectorySnapshot
+    public let currentSnapshot: DirectorySnapshot
+    public let period: TimeInterval
+
+    public init(previous: DirectorySnapshot, current: DirectorySnapshot) {
+        self.previousSnapshot = previous
+        self.currentSnapshot = current
+        self.period = current.timestamp.timeIntervalSince(previous.timestamp)
+    }
+
+    public var fileCountChange: Int {
+        currentSnapshot.totalFiles - previousSnapshot.totalFiles
+    }
+
+    public var sizeChange: Int64 {
+        currentSnapshot.totalSize - previousSnapshot.totalSize
+    }
+
+    public var formattedSizeChange: String {
+        let prefix = sizeChange >= 0 ? "+" : ""
+        return prefix + ByteCountFormatter.string(fromByteCount: sizeChange, countStyle: .file)
+    }
+
+    public var percentageGrowth: Double {
+        guard previousSnapshot.totalSize > 0 else { return 0 }
+        return Double(sizeChange) / Double(previousSnapshot.totalSize) * 100
+    }
+
+    public var isGrowing: Bool {
+        sizeChange > 0
+    }
+
+    public var growthRate: GrowthRate {
+        if sizeChange <= 0 {
+            return .stable
+        } else if sizeChange < 100_000_000 { // < 100MB
+            return .slow
+        } else if sizeChange < 1_000_000_000 { // < 1GB
+            return .moderate
+        } else {
+            return .rapid
+        }
+    }
+
+    public enum GrowthRate: String, Sendable {
+        case stable = "Stable"
+        case slow = "Slow Growth"
+        case moderate = "Moderate Growth"
+        case rapid = "Rapid Growth"
+
+        public var color: Color {
+            switch self {
+            case .stable: return .green
+            case .slow: return .blue
+            case .moderate: return .orange
+            case .rapid: return .red
+            }
+        }
+
+        public var icon: String {
+            switch self {
+            case .stable: return "checkmark.circle"
+            case .slow: return "arrow.up.right"
+            case .moderate: return "arrow.up"
+            case .rapid: return "exclamationmark.arrow.triangle.2.circlepath"
+            }
+        }
+    }
+
+    /// Get the most growing file types
+    public var topGrowingTypes: [(extension: String, count: Int)] {
+        var changes: [String: Int] = [:]
+
+        for (ext, count) in currentSnapshot.filesByExtension {
+            let previousCount = previousSnapshot.filesByExtension[ext] ?? 0
+            let change = count - previousCount
+            if change > 0 {
+                changes[ext] = change
+            }
+        }
+
+        return changes
+            .sorted { $0.value > $1.value }
+            .prefix(5)
+            .map { ($0.key, $0.value) }
+    }
+}
+
+/// A cleanup opportunity identified by the health system
+public struct CleanupOpportunity: Codable, Identifiable, Sendable {
+    public let id: UUID
+    public let type: OpportunityType
+    public let directoryPath: String
+    public let description: String
+    public let estimatedSavings: Int64
+    public let fileCount: Int
+    public let priority: Priority
+    public let createdAt: Date
+    public var isDismissed: Bool
+
+    public enum OpportunityType: String, Codable, Sendable {
+        case duplicateFiles = "Duplicate Files"
+        case unorganizedFiles = "Unorganized Files"
+        case largeFiles = "Large Files"
+        case oldFiles = "Old Files"
+        case screenshotClutter = "Screenshot Clutter"
+        case downloadClutter = "Download Clutter"
+        case cacheFiles = "Cache Files"
+        case temporaryFiles = "Temporary Files"
+
+        public var icon: String {
+            switch self {
+            case .duplicateFiles: return "doc.on.doc"
+            case .unorganizedFiles: return "folder.badge.questionmark"
+            case .largeFiles: return "externaldrive.fill"
+            case .oldFiles: return "clock.arrow.circlepath"
+            case .screenshotClutter: return "camera.viewfinder"
+            case .downloadClutter: return "arrow.down.circle"
+            case .cacheFiles: return "archivebox"
+            case .temporaryFiles: return "trash"
+            }
+        }
+
+        public var color: Color {
+            switch self {
+            case .duplicateFiles: return .purple
+            case .unorganizedFiles: return .orange
+            case .largeFiles: return .red
+            case .oldFiles: return .gray
+            case .screenshotClutter: return .blue
+            case .downloadClutter: return .green
+            case .cacheFiles: return .yellow
+            case .temporaryFiles: return .pink
+            }
+        }
+    }
+
+    public enum Priority: Int, Codable, Comparable, Sendable {
+        case low = 0
+        case medium = 1
+        case high = 2
+        case critical = 3
+
+        public static func < (lhs: Priority, rhs: Priority) -> Bool {
+            lhs.rawValue < rhs.rawValue
+        }
+
+        public var displayName: String {
+            switch self {
+            case .low: return "Low"
+            case .medium: return "Medium"
+            case .high: return "High"
+            case .critical: return "Critical"
+            }
+        }
+
+        public var color: Color {
+            switch self {
+            case .low: return .gray
+            case .medium: return .blue
+            case .high: return .orange
+            case .critical: return .red
+            }
+        }
+    }
+
+    public init(
+        id: UUID = UUID(),
+        type: OpportunityType,
+        directoryPath: String,
+        description: String,
+        estimatedSavings: Int64,
+        fileCount: Int,
+        priority: Priority = .medium,
+        createdAt: Date = Date(),
+        isDismissed: Bool = false
+    ) {
+        self.id = id
+        self.type = type
+        self.directoryPath = directoryPath
+        self.description = description
+        self.estimatedSavings = estimatedSavings
+        self.fileCount = fileCount
+        self.priority = priority
+        self.createdAt = createdAt
+        self.isDismissed = isDismissed
+    }
+
+    public var formattedSavings: String {
+        ByteCountFormatter.string(fromByteCount: estimatedSavings, countStyle: .file)
+    }
+}
+
+/// Health insight notification for the user
+public struct HealthInsight: Codable, Identifiable, Sendable {
+    public let id: UUID
+    public let directoryPath: String
+    public let message: String
+    public let details: String
+    public let type: InsightType
+    public let actionPrompt: String?
+    public let createdAt: Date
+    public var isRead: Bool
+
+    public enum InsightType: String, Codable, Sendable {
+        case growth = "Growth Alert"
+        case opportunity = "Cleanup Opportunity"
+        case milestone = "Milestone"
+        case suggestion = "Suggestion"
+        case warning = "Warning"
+
+        public var icon: String {
+            switch self {
+            case .growth: return "chart.line.uptrend.xyaxis"
+            case .opportunity: return "sparkles"
+            case .milestone: return "flag.fill"
+            case .suggestion: return "lightbulb"
+            case .warning: return "exclamationmark.triangle"
+            }
+        }
+
+        public var color: Color {
+            switch self {
+            case .growth: return .blue
+            case .opportunity: return .green
+            case .milestone: return .purple
+            case .suggestion: return .orange
+            case .warning: return .red
+            }
+        }
+    }
+
+    public init(
+        id: UUID = UUID(),
+        directoryPath: String,
+        message: String,
+        details: String,
+        type: InsightType,
+        actionPrompt: String? = nil,
+        createdAt: Date = Date(),
+        isRead: Bool = false
+    ) {
+        self.id = id
+        self.directoryPath = directoryPath
+        self.message = message
+        self.details = details
+        self.type = type
+        self.actionPrompt = actionPrompt
+        self.createdAt = createdAt
+        self.isRead = isRead
+    }
+}
+
+// MARK: - Workspace Health Manager
+
+@MainActor
+public class WorkspaceHealthManager: ObservableObject {
+    @Published public var snapshots: [String: [DirectorySnapshot]] = [:] // Path -> Snapshots
+    @Published public var opportunities: [CleanupOpportunity] = []
+    @Published public var insights: [HealthInsight] = []
+    @Published public var isAnalyzing: Bool = false
+    @Published public var lastAnalysisDate: Date?
+
+    private let userDefaults = UserDefaults.standard
+    private let snapshotsKey = "workspaceSnapshots"
+    private let opportunitiesKey = "cleanupOpportunities"
+    private let insightsKey = "healthInsights"
+    private let maxSnapshotsPerDirectory = 52 // ~1 year of weekly snapshots
+
+    public init() {
+        loadData()
+    }
+
+    // MARK: - Public Methods
+
+    /// Take a snapshot of a directory's current state
+    public func takeSnapshot(at path: String, files: [FileItem]) async {
+        let totalFiles = files.count
+        let totalSize = files.reduce(0) { $0 + $1.size }
+
+        // Count files by extension
+        var byExtension: [String: Int] = [:]
+        for file in files {
+            let ext = file.extension.lowercased().isEmpty ? "no_extension" : file.extension.lowercased()
+            byExtension[ext, default: 0] += 1
+        }
+
+        // Estimate unorganized files (files in root)
+        let unorganized = files.filter { file in
+            let relativePath = file.path.replacingOccurrences(of: path + "/", with: "")
+            return !relativePath.contains("/")
+        }.count
+
+        // Calculate average file age
+        let now = Date()
+        let totalAge = files.compactMap { $0.creationDate }.reduce(0.0) { total, date in
+            total + now.timeIntervalSince(date)
+        }
+        let averageAge = files.isEmpty ? 0 : totalAge / Double(files.count)
+
+        let snapshot = DirectorySnapshot(
+            directoryPath: path,
+            totalFiles: totalFiles,
+            totalSize: totalSize,
+            filesByExtension: byExtension,
+            unorganizedCount: unorganized,
+            averageFileAge: averageAge
+        )
+
+        // Add to snapshots
+        var directorySnapshots = snapshots[path] ?? []
+        directorySnapshots.append(snapshot)
+
+        // Trim old snapshots
+        if directorySnapshots.count > maxSnapshotsPerDirectory {
+            directorySnapshots = Array(directorySnapshots.suffix(maxSnapshotsPerDirectory))
+        }
+
+        snapshots[path] = directorySnapshots
+        saveData()
+
+        // Generate insights based on new snapshot
+        await generateInsights(for: path)
+    }
+
+    /// Get growth analysis for a directory
+    public func getGrowth(for path: String, period: TimePeriod = .week) -> DirectoryGrowth? {
+        guard let directorySnapshots = snapshots[path],
+              directorySnapshots.count >= 2 else {
+            return nil
+        }
+
+        let cutoffDate = Date().addingTimeInterval(-period.timeInterval)
+
+        // Find the snapshot closest to the cutoff date
+        let previousSnapshot = directorySnapshots
+            .filter { $0.timestamp <= cutoffDate }
+            .max { $0.timestamp < $1.timestamp }
+
+        guard let previous = previousSnapshot,
+              let current = directorySnapshots.last else {
+            return nil
+        }
+
+        return DirectoryGrowth(previous: previous, current: current)
+    }
+
+    /// Analyze a directory and identify cleanup opportunities
+    public func analyzeDirectory(path: String, files: [FileItem]) async {
+        isAnalyzing = true
+        defer {
+            isAnalyzing = false
+            lastAnalysisDate = Date()
+        }
+
+        // Remove old opportunities for this path
+        opportunities.removeAll { $0.directoryPath == path }
+
+        // Check for screenshot clutter
+        let screenshots = files.filter { isScreenshot($0) }
+        if screenshots.count >= 10 {
+            let totalSize = screenshots.reduce(0) { $0 + $1.size }
+            opportunities.append(CleanupOpportunity(
+                type: .screenshotClutter,
+                directoryPath: path,
+                description: "\(screenshots.count) screenshots detected. Consider organizing by date or project.",
+                estimatedSavings: 0, // Not suggesting deletion
+                fileCount: screenshots.count,
+                priority: screenshots.count >= 50 ? .high : .medium
+            ))
+        }
+
+        // Check for download clutter
+        let oldDownloads = files.filter { file in
+            guard let date = file.creationDate else { return false }
+            let age = Date().timeIntervalSince(date)
+            return age > 30 * 86400 // Older than 30 days
+        }
+        if oldDownloads.count >= 20 {
+            let totalSize = oldDownloads.reduce(0) { $0 + $1.size }
+            opportunities.append(CleanupOpportunity(
+                type: .downloadClutter,
+                directoryPath: path,
+                description: "\(oldDownloads.count) files are older than 30 days.",
+                estimatedSavings: totalSize,
+                fileCount: oldDownloads.count,
+                priority: totalSize > 1_000_000_000 ? .high : .medium
+            ))
+        }
+
+        // Check for large files
+        let largeFiles = files.filter { $0.size > 100_000_000 } // > 100MB
+        if !largeFiles.isEmpty {
+            let totalSize = largeFiles.reduce(0) { $0 + $1.size }
+            opportunities.append(CleanupOpportunity(
+                type: .largeFiles,
+                directoryPath: path,
+                description: "\(largeFiles.count) large files (>100MB) found. Review for archival.",
+                estimatedSavings: totalSize,
+                fileCount: largeFiles.count,
+                priority: largeFiles.count >= 5 ? .high : .low
+            ))
+        }
+
+        // Check for unorganized files in root
+        let rootFiles = files.filter { file in
+            let relativePath = file.path.replacingOccurrences(of: path + "/", with: "")
+            return !relativePath.contains("/") && !file.isDirectory
+        }
+        if rootFiles.count >= 20 {
+            opportunities.append(CleanupOpportunity(
+                type: .unorganizedFiles,
+                directoryPath: path,
+                description: "\(rootFiles.count) unorganized files in root. Let AI organize them!",
+                estimatedSavings: 0,
+                fileCount: rootFiles.count,
+                priority: rootFiles.count >= 50 ? .critical : .high
+            ))
+        }
+
+        // Check for temporary/cache files
+        let tempFiles = files.filter { isTempOrCacheFile($0) }
+        if !tempFiles.isEmpty {
+            let totalSize = tempFiles.reduce(0) { $0 + $1.size }
+            opportunities.append(CleanupOpportunity(
+                type: .temporaryFiles,
+                directoryPath: path,
+                description: "\(tempFiles.count) temporary files can be safely removed.",
+                estimatedSavings: totalSize,
+                fileCount: tempFiles.count,
+                priority: totalSize > 500_000_000 ? .high : .low
+            ))
+        }
+
+        saveData()
+    }
+
+    /// Dismiss an opportunity
+    public func dismissOpportunity(_ opportunity: CleanupOpportunity) {
+        if let index = opportunities.firstIndex(where: { $0.id == opportunity.id }) {
+            opportunities[index].isDismissed = true
+            saveData()
+        }
+    }
+
+    /// Mark insight as read
+    public func markInsightAsRead(_ insight: HealthInsight) {
+        if let index = insights.firstIndex(where: { $0.id == insight.id }) {
+            insights[index].isRead = true
+            saveData()
+        }
+    }
+
+    /// Clear all insights
+    public func clearInsights() {
+        insights.removeAll()
+        saveData()
+    }
+
+    // MARK: - Computed Properties
+
+    public var activeOpportunities: [CleanupOpportunity] {
+        opportunities.filter { !$0.isDismissed }.sorted { $0.priority > $1.priority }
+    }
+
+    public var unreadInsights: [HealthInsight] {
+        insights.filter { !$0.isRead }.sorted { $0.createdAt > $1.createdAt }
+    }
+
+    public var totalPotentialSavings: Int64 {
+        activeOpportunities.reduce(0) { $0 + $1.estimatedSavings }
+    }
+
+    public var formattedTotalSavings: String {
+        ByteCountFormatter.string(fromByteCount: totalPotentialSavings, countStyle: .file)
+    }
+
+    // MARK: - Private Methods
+
+    private func generateInsights(for path: String) async {
+        guard let directorySnapshots = snapshots[path], directorySnapshots.count >= 2 else {
+            return
+        }
+
+        // Weekly growth insight
+        if let growth = getGrowth(for: path, period: .week), growth.isGrowing {
+            let directoryName = URL(fileURLWithPath: path).lastPathComponent
+
+            // Create insight for significant growth
+            if growth.sizeChange > 500_000_000 { // > 500MB
+                let topTypes = growth.topGrowingTypes.prefix(3).map { "\($0.count) \($0.extension) files" }.joined(separator: ", ")
+
+                let insight = HealthInsight(
+                    directoryPath: path,
+                    message: "Your \(directoryName) folder grew by \(growth.formattedSizeChange) this week",
+                    details: topTypes.isEmpty ? "Consider organizing to keep things tidy." : "Main contributors: \(topTypes)",
+                    type: .growth,
+                    actionPrompt: "Would you like me to organize new files?"
+                )
+
+                // Only add if we don't have a similar recent insight
+                let hasRecent = insights.contains { existing in
+                    existing.directoryPath == path &&
+                    existing.type == .growth &&
+                    Date().timeIntervalSince(existing.createdAt) < 7 * 86400
+                }
+
+                if !hasRecent {
+                    insights.insert(insight, at: 0)
+                    saveData()
+
+                    // Send notification if enabled
+                    await sendNotification(insight)
+                }
+            }
+        }
+    }
+
+    private func sendNotification(_ insight: HealthInsight) async {
+        let center = UNUserNotificationCenter.current()
+
+        // Request authorization if needed
+        do {
+            let granted = try await center.requestAuthorization(options: [.alert, .sound, .badge])
+            guard granted else { return }
+
+            let content = UNMutableNotificationContent()
+            content.title = "FileOrganizer"
+            content.body = insight.message
+            content.sound = .default
+
+            if let prompt = insight.actionPrompt {
+                content.subtitle = prompt
+            }
+
+            let request = UNNotificationRequest(
+                identifier: insight.id.uuidString,
+                content: content,
+                trigger: nil // Deliver immediately
+            )
+
+            try await center.add(request)
+        } catch {
+            DebugLogger.log("Failed to send notification: \(error.localizedDescription)")
+        }
+    }
+
+    private func isScreenshot(_ file: FileItem) -> Bool {
+        let name = file.name.lowercased()
+        let patterns = ["screenshot", "screen shot", "capture", "スクリーンショット", "截屏"]
+        return patterns.contains { name.contains($0) }
+    }
+
+    private func isTempOrCacheFile(_ file: FileItem) -> Bool {
+        let name = file.name.lowercased()
+        let ext = file.extension.lowercased()
+
+        let tempExtensions = ["tmp", "temp", "cache", "bak", "old", "swp"]
+        let tempPatterns = [".ds_store", "thumbs.db", "desktop.ini", "~$"]
+
+        return tempExtensions.contains(ext) ||
+               tempPatterns.contains { name.contains($0) } ||
+               name.hasPrefix("~") ||
+               name.hasSuffix("~")
+    }
+
+    // MARK: - Persistence
+
+    private func loadData() {
+        // Load snapshots
+        if let data = userDefaults.data(forKey: snapshotsKey),
+           let decoded = try? JSONDecoder().decode([String: [DirectorySnapshot]].self, from: data) {
+            snapshots = decoded
+        }
+
+        // Load opportunities
+        if let data = userDefaults.data(forKey: opportunitiesKey),
+           let decoded = try? JSONDecoder().decode([CleanupOpportunity].self, from: data) {
+            opportunities = decoded
+        }
+
+        // Load insights
+        if let data = userDefaults.data(forKey: insightsKey),
+           let decoded = try? JSONDecoder().decode([HealthInsight].self, from: data) {
+            insights = decoded
+        }
+    }
+
+    private func saveData() {
+        if let encoded = try? JSONEncoder().encode(snapshots) {
+            userDefaults.set(encoded, forKey: snapshotsKey)
+        }
+
+        if let encoded = try? JSONEncoder().encode(opportunities) {
+            userDefaults.set(encoded, forKey: opportunitiesKey)
+        }
+
+        if let encoded = try? JSONEncoder().encode(insights) {
+            userDefaults.set(encoded, forKey: insightsKey)
+        }
+    }
+}
+
+// MARK: - Time Period
+
+public enum TimePeriod: String, CaseIterable, Identifiable, Sendable {
+    case day = "24 Hours"
+    case week = "Week"
+    case month = "Month"
+    case quarter = "Quarter"
+    case year = "Year"
+
+    public var id: String { rawValue }
+
+    public var timeInterval: TimeInterval {
+        switch self {
+        case .day: return 86400
+        case .week: return 7 * 86400
+        case .month: return 30 * 86400
+        case .quarter: return 90 * 86400
+        case .year: return 365 * 86400
+        }
+    }
+}
+
+// Required for notifications
+import UserNotifications

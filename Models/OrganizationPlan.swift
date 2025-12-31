@@ -51,3 +51,4 @@ public struct OrganizationPlan: Codable, Identifiable, Hashable, Sendable {
         return countFolders(suggestions)
     }
 }
+

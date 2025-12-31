@@ -41,6 +41,11 @@ struct FileOrganizerApp: App {
                     organizer.exclusionRules = exclusionRules
                     organizer.personaManager = personaManager
                     appState.organizer = organizer
+                    
+                    // Setup callback for calibration
+                    appState.calibrateAction = { folder in
+                        coordinator?.calibrateFolder(folder)
+                    }
                 }
                 .onChange(of: watchedFoldersManager.folders) { oldValue, newValue in
                     coordinator?.syncWatchedFolders()
@@ -53,4 +58,5 @@ struct FileOrganizerApp: App {
         }
     }
 }
+
 
