@@ -95,14 +95,31 @@ jobs:
           echo "✅ UI Tests passed!"
         timeout-minutes: 30
 
-      - name: Upload Test Results
+      - name: Upload Build and Test Logs
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results
+          name: build-and-test-logs
           path: |
-            TestResults.xcresult
-            test_output.log
             build_output.log
+            test_output.log
+            TestResults.xcresult
           retention-days: 7
           if-no-files-found: ignore
+
+      - name: Print build errors summary
+        if: failure()
+        run: |
+          echo "=== BUILD/TEST ERRORS ==="
+          if [ -f build_output.log ]; then
+            echo "--- Build Errors ---"
+            grep -E "error:" build_output.log | head -50 || echo "No explicit errors found"
+            echo ""
+            echo "--- Last 100 lines of build log ---"
+            tail -100 build_output.log
+          fi
+          if [ -f test_output.log ]; then
+            echo ""
+            echo "--- Test Errors ---"
+            grep -E "error:|failed|FAILED" test_output.log | head -30 || echo "No test errors found"
+          fi
