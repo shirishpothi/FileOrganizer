@@ -19,4 +19,4 @@ jobs:
         xcode-version: '15.4'
 
     - name: Build and Test
-      run: swift test
+      run: swift test -Xswiftc -warnings-as-errors

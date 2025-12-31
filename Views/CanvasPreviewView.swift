@@ -69,7 +69,7 @@ class CanvasViewModel: ObservableObject {
         let maxWidth = max(canvasSize.width - padding * 2, 800)
 
         // Create folder nodes
-        for (index, suggestion) in plan.suggestions.enumerated() {
+        for (_, suggestion) in plan.suggestions.enumerated() {
             let folderId = suggestion.id
 
             // Position folders in a grid
@@ -795,8 +795,8 @@ struct LegendItem: View {
                 folderName: "Documents",
                 description: "Text documents",
                 files: [
-                    FileItem(path: "/test/doc1.pdf", name: "doc1", `extension`: "pdf", size: 1024),
-                    FileItem(path: "/test/doc2.txt", name: "doc2", `extension`: "txt", size: 512)
+                    FileItem(path: "/test/doc1.pdf", name: "doc1", extension: "pdf", size: 1024),
+                    FileItem(path: "/test/doc2.txt", name: "doc2", extension: "txt", size: 512)
                 ],
                 reasoning: "PDF and text files"
             ),
