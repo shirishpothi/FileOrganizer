@@ -112,7 +112,30 @@
 		3353FCAD2F0124320097CD23 /* DirectorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FC3D2F0124320097CD23 /* DirectorySelectionView.swift */; };
 		3353FCAE2F0124320097CD23 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FC422F0124320097CD23 /* PreviewView.swift */; };
 		3353FCAF2F0124320097CD23 /* FileOrganizationValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FC302F0124320097CD23 /* FileOrganizationValidator.swift */; };
+		3353FCC42F0124320097CD23 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB02F0124320097CD23 /* AppCoordinator.swift */; };
+		3353FCC52F0124320097CD23 /* ContentAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB12F0124320097CD23 /* ContentAnalyzer.swift */; };
+		3353FCC62F0124320097CD23 /* DuplicateDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB22F0124320097CD23 /* DuplicateDetector.swift */; };
+		3353FCC72F0124320097CD23 /* FolderWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB32F0124320097CD23 /* FolderWatcher.swift */; };
+		3353FCC82F0124320097CD23 /* SemanticDuplicateDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB42F0124320097CD23 /* SemanticDuplicateDetector.swift */; };
+		3353FCC92F0124320097CD23 /* VisionAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB52F0124320097CD23 /* VisionAnalyzer.swift */; };
+		3353FCCA2F0124320097CD23 /* OrganizationPersona.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB62F0124320097CD23 /* OrganizationPersona.swift */; };
+		3353FCCB2F0124320097CD23 /* WatchedFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB72F0124320097CD23 /* WatchedFolder.swift */; };
+		3353FCCC2F0124320097CD23 /* WorkspaceHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB82F0124320097CD23 /* WorkspaceHealth.swift */; };
+		3353FCCD2F0124320097CD23 /* ExtensionListener.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB92F0124320097CD23 /* ExtensionListener.swift */; };
+		3353FCCE2F0124320097CD23 /* AppCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCBA2F0124320097CD23 /* AppCommands.swift */; };
+		3353FCCF2F0124320097CD23 /* CanvasPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCBB2F0124320097CD23 /* CanvasPreviewView.swift */; };
+		3353FCD02F0124320097CD23 /* DuplicatesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCBC2F0124320097CD23 /* DuplicatesView.swift */; };
+		3353FCD12F0124320097CD23 /* FileDropDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCBD2F0124320097CD23 /* FileDropDelegate.swift */; };
+		3353FCD22F0124320097CD23 /* LiquidDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCBE2F0124320097CD23 /* LiquidDropdown.swift */; };
+		3353FCD32F0124320097CD23 /* MenuBarDropZone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCBF2F0124320097CD23 /* MenuBarDropZone.swift */; };
+		3353FCD42F0124320097CD23 /* PersonaPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCC02F0124320097CD23 /* PersonaPickerView.swift */; };
+		3353FCD52F0124320097CD23 /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCC12F0124320097CD23 /* TimelineView.swift */; };
+		3353FCD62F0124320097CD23 /* WatchedFoldersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCC22F0124320097CD23 /* WatchedFoldersView.swift */; };
+		33A128932F01230200A86470 /* ContentAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCB12F0124320097CD23 /* ContentAnalyzer.swift */; };
+		3353FCD72F0124320097CD23 /* WorkspaceHealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353FCC32F0124320097CD23 /* WorkspaceHealthView.swift */; };
+		33A128922F01230200A86470 /* AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33A128912F01230200A86470 /* AppUITests.swift */; };
 /* End PBXBuildFile section */
+
 
 /* Begin PBXContainerItemProxy section */
 		33A128702F01230200A86470 /* PBXContainerItemProxy */ = {
@@ -167,10 +190,32 @@
 		3353FC422F0124320097CD23 /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		3353FC432F0124320097CD23 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3353FC452F0124320097CD23 /* FileOrganizerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOrganizerApp.swift; sourceTree = "<group>"; };
+		3353FCB02F0124320097CD23 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
+		3353FCB12F0124320097CD23 /* ContentAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentAnalyzer.swift; sourceTree = "<group>"; };
+		3353FCB22F0124320097CD23 /* DuplicateDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateDetector.swift; sourceTree = "<group>"; };
+		3353FCB32F0124320097CD23 /* FolderWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderWatcher.swift; sourceTree = "<group>"; };
+		3353FCB42F0124320097CD23 /* SemanticDuplicateDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticDuplicateDetector.swift; sourceTree = "<group>"; };
+		3353FCB52F0124320097CD23 /* VisionAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAnalyzer.swift; sourceTree = "<group>"; };
+		3353FCB62F0124320097CD23 /* OrganizationPersona.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrganizationPersona.swift; sourceTree = "<group>"; };
+		3353FCB72F0124320097CD23 /* WatchedFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchedFolder.swift; sourceTree = "<group>"; };
+		3353FCB82F0124320097CD23 /* WorkspaceHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceHealth.swift; sourceTree = "<group>"; };
+		3353FCB92F0124320097CD23 /* ExtensionListener.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionListener.swift; sourceTree = "<group>"; };
+		3353FCBA2F0124320097CD23 /* AppCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCommands.swift; sourceTree = "<group>"; };
+		3353FCBB2F0124320097CD23 /* CanvasPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasPreviewView.swift; sourceTree = "<group>"; };
+		3353FCBC2F0124320097CD23 /* DuplicatesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicatesView.swift; sourceTree = "<group>"; };
+		3353FCBD2F0124320097CD23 /* FileDropDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDropDelegate.swift; sourceTree = "<group>"; };
+		3353FCBE2F0124320097CD23 /* LiquidDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidDropdown.swift; sourceTree = "<group>"; };
+		3353FCBF2F0124320097CD23 /* MenuBarDropZone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarDropZone.swift; sourceTree = "<group>"; };
+		3353FCC02F0124320097CD23 /* PersonaPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonaPickerView.swift; sourceTree = "<group>"; };
+		3353FCC12F0124320097CD23 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		3353FCC22F0124320097CD23 /* WatchedFoldersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchedFoldersView.swift; sourceTree = "<group>"; };
+		3353FCC32F0124320097CD23 /* WorkspaceHealthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceHealthView.swift; sourceTree = "<group>"; };
 		33A128622F01230000A86470 /* FileOrganiser.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FileOrganiser.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		33A1286F2F01230200A86470 /* FileOrganiserTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FileOrganiserTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		33A128792F01230200A86470 /* FileOrganiserUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FileOrganiserUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		33A128912F01230200A86470 /* AppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
 
 /* Begin PBXFrameworksBuildPhase section */
 		33A1285F2F01230000A86470 /* Frameworks */ = {
@@ -214,12 +259,18 @@
 		3353FC252F0124320097CD23 /* FileSystem */ = {
 			isa = PBXGroup;
 			children = (
+				3353FCB12F0124320097CD23 /* ContentAnalyzer.swift */,
 				3353FC232F0124320097CD23 /* DirectoryScanner.swift */,
+				3353FCB22F0124320097CD23 /* DuplicateDetector.swift */,
 				3353FC242F0124320097CD23 /* FileSystemManager.swift */,
+				3353FCB32F0124320097CD23 /* FolderWatcher.swift */,
+				3353FCB42F0124320097CD23 /* SemanticDuplicateDetector.swift */,
+				3353FCB52F0124320097CD23 /* VisionAnalyzer.swift */,
 			);
 			path = FileSystem;
 			sourceTree = "<group>";
 		};
+
 		3353FC282F0124320097CD23 /* FinderExtension */ = {
 			isa = PBXGroup;
 			children = (
@@ -237,11 +288,15 @@
 				3353FC2B2F0124320097CD23 /* FileItem.swift */,
 				3353FC2C2F0124320097CD23 /* FolderSuggestion.swift */,
 				3353FC2D2F0124320097CD23 /* OrganizationHistory.swift */,
+				3353FCB62F0124320097CD23 /* OrganizationPersona.swift */,
 				3353FC2E2F0124320097CD23 /* OrganizationPlan.swift */,
+				3353FCB72F0124320097CD23 /* WatchedFolder.swift */,
+				3353FCB82F0124320097CD23 /* WorkspaceHealth.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
 		};
+
 		3353FC332F0124320097CD23 /* Organizer */ = {
 			isa = PBXGroup;
 			children = (
@@ -257,12 +312,14 @@
 			children = (
 				3353FC342F0124320097CD23 /* Constants.swift */,
 				3353FC352F0124320097CD23 /* DebugLogger.swift */,
+				3353FCB92F0124320097CD23 /* ExtensionListener.swift */,
 				3353FC362F0124320097CD23 /* Extensions.swift */,
 				3353FC372F0124320097CD23 /* KeychainManager.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
 		};
+
 		3353FC3A2F0124320097CD23 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -275,18 +332,29 @@
 			isa = PBXGroup;
 			children = (
 				3353FC3B2F0124320097CD23 /* AnalysisView.swift */,
+				3353FCBA2F0124320097CD23 /* AppCommands.swift */,
+				3353FCBB2F0124320097CD23 /* CanvasPreviewView.swift */,
 				3353FC3C2F0124320097CD23 /* ContentView.swift */,
 				3353FC3D2F0124320097CD23 /* DirectorySelectionView.swift */,
+				3353FCBC2F0124320097CD23 /* DuplicatesView.swift */,
 				3353FC3E2F0124320097CD23 /* ExclusionRulesView.swift */,
+				3353FCBD2F0124320097CD23 /* FileDropDelegate.swift */,
 				3353FC3F2F0124320097CD23 /* HistoryView.swift */,
+				3353FCBE2F0124320097CD23 /* LiquidDropdown.swift */,
+				3353FCBF2F0124320097CD23 /* MenuBarDropZone.swift */,
 				3353FC402F0124320097CD23 /* OrganizationResultView.swift */,
 				3353FC412F0124320097CD23 /* OrganizeView.swift */,
+				3353FCC02F0124320097CD23 /* PersonaPickerView.swift */,
 				3353FC422F0124320097CD23 /* PreviewView.swift */,
 				3353FC432F0124320097CD23 /* SettingsView.swift */,
+				3353FCC12F0124320097CD23 /* TimelineView.swift */,
+				3353FCC22F0124320097CD23 /* WatchedFoldersView.swift */,
+				3353FCC32F0124320097CD23 /* WorkspaceHealthView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
 		};
+
 		3353FC462F0124320097CD23 /* FileOrganizer */ = {
 			isa = PBXGroup;
 			children = (
@@ -298,15 +366,19 @@
 				3353FC382F0124320097CD23 /* Utilities */,
 				3353FC3A2F0124320097CD23 /* ViewModels */,
 				3353FC442F0124320097CD23 /* Views */,
+				3353FCB02F0124320097CD23 /* AppCoordinator.swift */,
 				3353FC452F0124320097CD23 /* FileOrganizerApp.swift */,
 			);
-			path = FileOrganizer;
+			
 			sourceTree = "<group>";
 		};
+
 		33A128592F01230000A86470 = {
 			isa = PBXGroup;
 			children = (
 				3353FC462F0124320097CD23 /* FileOrganizer */,
+				3353FC462F0124320097CD23 /* FileOrganizer */,
+				33A128902F01230200A86470 /* FileOrganiserUITests */,
 				33A128632F01230000A86470 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -319,6 +391,14 @@
 				33A128792F01230200A86470 /* FileOrganiserUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		33A128902F01230200A86470 /* FileOrganiserUITests */ = {
+			isa = PBXGroup;
+			children = (
+				33A128912F01230200A86470 /* AppUITests.swift */,
+			);
+			path = FileOrganiserUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -452,87 +532,73 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		33A1285E2F01230000A86470 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				3353FC472F0124320097CD23 /* DirectoryScanner.swift in Sources */,
-				3353FC482F0124320097CD23 /* ExclusionRulesView.swift in Sources */,
-				3353FC492F0124320097CD23 /* DebugLogger.swift in Sources */,
-				3353FC4A2F0124320097CD23 /* OrganizationPlan.swift in Sources */,
-				3353FC4B2F0124320097CD23 /* FolderSuggestion.swift in Sources */,
-				3353FC4C2F0124320097CD23 /* ResponseParser.swift in Sources */,
-				3353FC4D2F0124320097CD23 /* FolderOrganizer.swift in Sources */,
-				3353FC4E2F0124320097CD23 /* OrganizeView.swift in Sources */,
-				3353FC4F2F0124320097CD23 /* SettingsView.swift in Sources */,
-				3353FC502F0124320097CD23 /* AIConfig.swift in Sources */,
-				3353FC512F0124320097CD23 /* Constants.swift in Sources */,
-				3353FC522F0124320097CD23 /* KeychainManager.swift in Sources */,
-				3353FC532F0124320097CD23 /* FileItem.swift in Sources */,
-				3353FC542F0124320097CD23 /* AIClientFactory.swift in Sources */,
-				3353FC552F0124320097CD23 /* SettingsViewModel.swift in Sources */,
-				3353FC562F0124320097CD23 /* OrganizationHistory.swift in Sources */,
-				3353FC572F0124320097CD23 /* ExtensionCommunication.swift in Sources */,
-				3353FC582F0124320097CD23 /* PromptBuilder.swift in Sources */,
-				3353FC592F0124320097CD23 /* FileSystemManager.swift in Sources */,
-				3353FC5A2F0124320097CD23 /* OpenAIClient.swift in Sources */,
-				3353FC5B2F0124320097CD23 /* AnalysisView.swift in Sources */,
-				3353FC5C2F0124320097CD23 /* OrganizationResultView.swift in Sources */,
-				3353FC5D2F0124320097CD23 /* AIClientProtocol.swift in Sources */,
-				3353FC5E2F0124320097CD23 /* AppleFoundationModelClient.swift in Sources */,
-				3353FC5F2F0124320097CD23 /* Extensions.swift in Sources */,
-				3353FC602F0124320097CD23 /* ExclusionRule.swift in Sources */,
-				3353FC612F0124320097CD23 /* HistoryView.swift in Sources */,
-				3353FC622F0124320097CD23 /* FileOrganizerActionExtension.swift in Sources */,
-				3353FC632F0124320097CD23 /* FileOrganizerApp.swift in Sources */,
-				3353FC642F0124320097CD23 /* SystemPrompt.swift in Sources */,
-				3353FC652F0124320097CD23 /* PreviewManager.swift in Sources */,
-				3353FC662F0124320097CD23 /* ContentView.swift in Sources */,
-				3353FC672F0124320097CD23 /* DirectorySelectionView.swift in Sources */,
-				3353FC682F0124320097CD23 /* PreviewView.swift in Sources */,
-				3353FC692F0124320097CD23 /* FileOrganizationValidator.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
+	33A1285E2F01230000A86470 /* Sources */ = {
+		isa = PBXSourcesBuildPhase;
+		buildActionMask = 2147483647;
+		files = (
+			3353FC472F0124320097CD23 /* DirectoryScanner.swift in Sources */,
+			3353FC482F0124320097CD23 /* ExclusionRulesView.swift in Sources */,
+			3353FC492F0124320097CD23 /* DebugLogger.swift in Sources */,
+			3353FC4A2F0124320097CD23 /* OrganizationPlan.swift in Sources */,
+			3353FC4B2F0124320097CD23 /* FolderSuggestion.swift in Sources */,
+			3353FC4C2F0124320097CD23 /* ResponseParser.swift in Sources */,
+			3353FC4D2F0124320097CD23 /* FolderOrganizer.swift in Sources */,
+			3353FC4E2F0124320097CD23 /* OrganizeView.swift in Sources */,
+			3353FC4F2F0124320097CD23 /* SettingsView.swift in Sources */,
+			3353FC502F0124320097CD23 /* AIConfig.swift in Sources */,
+			3353FC512F0124320097CD23 /* Constants.swift in Sources */,
+			3353FC522F0124320097CD23 /* KeychainManager.swift in Sources */,
+			3353FC532F0124320097CD23 /* FileItem.swift in Sources */,
+			3353FC542F0124320097CD23 /* AIClientFactory.swift in Sources */,
+			3353FC552F0124320097CD23 /* SettingsViewModel.swift in Sources */,
+			3353FC562F0124320097CD23 /* OrganizationHistory.swift in Sources */,
+			3353FC572F0124320097CD23 /* ExtensionCommunication.swift in Sources */,
+			3353FC582F0124320097CD23 /* PromptBuilder.swift in Sources */,
+			3353FC592F0124320097CD23 /* FileSystemManager.swift in Sources */,
+			3353FC5A2F0124320097CD23 /* OpenAIClient.swift in Sources */,
+			3353FC5B2F0124320097CD23 /* AnalysisView.swift in Sources */,
+			3353FC5C2F0124320097CD23 /* OrganizationResultView.swift in Sources */,
+			3353FC5D2F0124320097CD23 /* AIClientProtocol.swift in Sources */,
+			3353FC5E2F0124320097CD23 /* AppleFoundationModelClient.swift in Sources */,
+			3353FC5F2F0124320097CD23 /* Extensions.swift in Sources */,
+			3353FC602F0124320097CD23 /* ExclusionRule.swift in Sources */,
+			3353FC612F0124320097CD23 /* HistoryView.swift in Sources */,
+			3353FC622F0124320097CD23 /* FileOrganizerActionExtension.swift in Sources */,
+			3353FC632F0124320097CD23 /* FileOrganizerApp.swift in Sources */,
+			3353FC642F0124320097CD23 /* SystemPrompt.swift in Sources */,
+			3353FC652F0124320097CD23 /* PreviewManager.swift in Sources */,
+			3353FC662F0124320097CD23 /* ContentView.swift in Sources */,
+			3353FC672F0124320097CD23 /* DirectorySelectionView.swift in Sources */,
+			3353FC682F0124320097CD23 /* PreviewView.swift in Sources */,
+			3353FC692F0124320097CD23 /* FileOrganizationValidator.swift in Sources */,
+			3353FCC42F0124320097CD23 /* AppCoordinator.swift in Sources */,
+			3353FCC52F0124320097CD23 /* ContentAnalyzer.swift in Sources */,
+			3353FCC62F0124320097CD23 /* DuplicateDetector.swift in Sources */,
+			3353FCC72F0124320097CD23 /* FolderWatcher.swift in Sources */,
+			3353FCC82F0124320097CD23 /* SemanticDuplicateDetector.swift in Sources */,
+			3353FCC92F0124320097CD23 /* VisionAnalyzer.swift in Sources */,
+			3353FCCA2F0124320097CD23 /* OrganizationPersona.swift in Sources */,
+			3353FCCB2F0124320097CD23 /* WatchedFolder.swift in Sources */,
+			3353FCCC2F0124320097CD23 /* WorkspaceHealth.swift in Sources */,
+			3353FCCD2F0124320097CD23 /* ExtensionListener.swift in Sources */,
+			3353FCCE2F0124320097CD23 /* AppCommands.swift in Sources */,
+			3353FCCF2F0124320097CD23 /* CanvasPreviewView.swift in Sources */,
+			3353FCD02F0124320097CD23 /* DuplicatesView.swift in Sources */,
+			3353FCD12F0124320097CD23 /* FileDropDelegate.swift in Sources */,
+			3353FCD22F0124320097CD23 /* LiquidDropdown.swift in Sources */,
+			3353FCD32F0124320097CD23 /* MenuBarDropZone.swift in Sources */,
+			3353FCD42F0124320097CD23 /* PersonaPickerView.swift in Sources */,
+			3353FCD52F0124320097CD23 /* TimelineView.swift in Sources */,
+			3353FCD62F0124320097CD23 /* WatchedFoldersView.swift in Sources */,
+			3353FCD72F0124320097CD23 /* WorkspaceHealthView.swift in Sources */,
+		);
+		runOnlyForDeploymentPostprocessing = 0;
+	};
+
 		33A1286B2F01230200A86470 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3353FC6A2F0124320097CD23 /* DirectoryScanner.swift in Sources */,
-				3353FC6B2F0124320097CD23 /* ExclusionRulesView.swift in Sources */,
-				3353FC6C2F0124320097CD23 /* DebugLogger.swift in Sources */,
-				3353FC6D2F0124320097CD23 /* OrganizationPlan.swift in Sources */,
-				3353FC6E2F0124320097CD23 /* FolderSuggestion.swift in Sources */,
-				3353FC6F2F0124320097CD23 /* ResponseParser.swift in Sources */,
-				3353FC702F0124320097CD23 /* FolderOrganizer.swift in Sources */,
-				3353FC712F0124320097CD23 /* OrganizeView.swift in Sources */,
-				3353FC722F0124320097CD23 /* SettingsView.swift in Sources */,
-				3353FC732F0124320097CD23 /* AIConfig.swift in Sources */,
-				3353FC742F0124320097CD23 /* Constants.swift in Sources */,
-				3353FC752F0124320097CD23 /* KeychainManager.swift in Sources */,
-				3353FC762F0124320097CD23 /* FileItem.swift in Sources */,
-				3353FC772F0124320097CD23 /* AIClientFactory.swift in Sources */,
-				3353FC782F0124320097CD23 /* SettingsViewModel.swift in Sources */,
-				3353FC792F0124320097CD23 /* OrganizationHistory.swift in Sources */,
-				3353FC7A2F0124320097CD23 /* ExtensionCommunication.swift in Sources */,
-				3353FC7B2F0124320097CD23 /* PromptBuilder.swift in Sources */,
-				3353FC7C2F0124320097CD23 /* FileSystemManager.swift in Sources */,
-				3353FC7D2F0124320097CD23 /* OpenAIClient.swift in Sources */,
-				3353FC7E2F0124320097CD23 /* AnalysisView.swift in Sources */,
-				3353FC7F2F0124320097CD23 /* OrganizationResultView.swift in Sources */,
-				3353FC802F0124320097CD23 /* AIClientProtocol.swift in Sources */,
-				3353FC812F0124320097CD23 /* AppleFoundationModelClient.swift in Sources */,
-				3353FC822F0124320097CD23 /* Extensions.swift in Sources */,
-				3353FC832F0124320097CD23 /* ExclusionRule.swift in Sources */,
-				3353FC842F0124320097CD23 /* HistoryView.swift in Sources */,
-				3353FC852F0124320097CD23 /* FileOrganizerActionExtension.swift in Sources */,
-				3353FC862F0124320097CD23 /* FileOrganizerApp.swift in Sources */,
-				3353FC872F0124320097CD23 /* SystemPrompt.swift in Sources */,
-				3353FC882F0124320097CD23 /* PreviewManager.swift in Sources */,
-				3353FC892F0124320097CD23 /* ContentView.swift in Sources */,
-				3353FC8A2F0124320097CD23 /* DirectorySelectionView.swift in Sources */,
-				3353FC8B2F0124320097CD23 /* PreviewView.swift in Sources */,
-				3353FC8C2F0124320097CD23 /* FileOrganizationValidator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,41 +606,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3353FC8D2F0124320097CD23 /* DirectoryScanner.swift in Sources */,
-				3353FC8E2F0124320097CD23 /* ExclusionRulesView.swift in Sources */,
-				3353FC8F2F0124320097CD23 /* DebugLogger.swift in Sources */,
-				3353FC902F0124320097CD23 /* OrganizationPlan.swift in Sources */,
-				3353FC912F0124320097CD23 /* FolderSuggestion.swift in Sources */,
-				3353FC922F0124320097CD23 /* ResponseParser.swift in Sources */,
-				3353FC932F0124320097CD23 /* FolderOrganizer.swift in Sources */,
-				3353FC942F0124320097CD23 /* OrganizeView.swift in Sources */,
-				3353FC952F0124320097CD23 /* SettingsView.swift in Sources */,
-				3353FC962F0124320097CD23 /* AIConfig.swift in Sources */,
-				3353FC972F0124320097CD23 /* Constants.swift in Sources */,
-				3353FC982F0124320097CD23 /* KeychainManager.swift in Sources */,
-				3353FC992F0124320097CD23 /* FileItem.swift in Sources */,
-				3353FC9A2F0124320097CD23 /* AIClientFactory.swift in Sources */,
-				3353FC9B2F0124320097CD23 /* SettingsViewModel.swift in Sources */,
-				3353FC9C2F0124320097CD23 /* OrganizationHistory.swift in Sources */,
-				3353FC9D2F0124320097CD23 /* ExtensionCommunication.swift in Sources */,
-				3353FC9E2F0124320097CD23 /* PromptBuilder.swift in Sources */,
-				3353FC9F2F0124320097CD23 /* FileSystemManager.swift in Sources */,
-				3353FCA02F0124320097CD23 /* OpenAIClient.swift in Sources */,
-				3353FCA12F0124320097CD23 /* AnalysisView.swift in Sources */,
-				3353FCA22F0124320097CD23 /* OrganizationResultView.swift in Sources */,
-				3353FCA32F0124320097CD23 /* AIClientProtocol.swift in Sources */,
-				3353FCA42F0124320097CD23 /* AppleFoundationModelClient.swift in Sources */,
-				3353FCA52F0124320097CD23 /* Extensions.swift in Sources */,
-				3353FCA62F0124320097CD23 /* ExclusionRule.swift in Sources */,
-				3353FCA72F0124320097CD23 /* HistoryView.swift in Sources */,
-				3353FCA82F0124320097CD23 /* FileOrganizerActionExtension.swift in Sources */,
-				3353FCA92F0124320097CD23 /* FileOrganizerApp.swift in Sources */,
-				3353FCAA2F0124320097CD23 /* SystemPrompt.swift in Sources */,
-				3353FCAB2F0124320097CD23 /* PreviewManager.swift in Sources */,
-				3353FCAC2F0124320097CD23 /* ContentView.swift in Sources */,
-				3353FCAD2F0124320097CD23 /* DirectorySelectionView.swift in Sources */,
-				3353FCAE2F0124320097CD23 /* PreviewView.swift in Sources */,
-				3353FCAF2F0124320097CD23 /* FileOrganizationValidator.swift in Sources */,
+				33A128922F01230200A86470 /* AppUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -732,7 +764,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shirishpothi.FileOrganiser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -774,7 +806,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shirishpothi.FileOrganiser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -800,7 +832,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shirishpothi.FileOrganiserTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -825,7 +857,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shirishpothi.FileOrganiserTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -849,7 +881,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shirishpothi.FileOrganiserUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -873,7 +905,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
-				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shirishpothi.FileOrganiserUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
