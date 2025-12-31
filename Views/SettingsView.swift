@@ -25,25 +25,40 @@ struct SettingsView: View {
                     Form {
                         // AI Provider Section
                         Section {
-                            Picker("Provider", selection: $viewModel.config.provider) {
+                            VStack(alignment: .leading, spacing: 12) {
                                 ForEach(Array(AIProvider.allCases), id: \.self) { provider in
                                     HStack {
+                                        // Radio Button Icon
+                                        Image(systemName: viewModel.config.provider == provider ? "largecircle.fill.circle" : "circle")
+                                            .foregroundColor(viewModel.config.provider == provider ? .accentColor : .secondary)
+                                            .font(.system(size: 16))
+                                        
+                                        // Label
                                         Text(provider.displayName)
+                                            .foregroundColor(.primary)
+                                        
                                         Spacer()
+                                        
+                                        // Availability Badge
                                         if !provider.isAvailable {
                                             Label("Unavailable", systemImage: "xmark.circle.fill")
                                                 .foregroundColor(.red)
                                                 .font(.caption)
                                         }
                                     }
-                                    .tag(provider)
+                                    .contentShape(Rectangle()) // Make the whole row clickable
+                                    .onTapGesture {
+                                        if provider.isAvailable {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                viewModel.config.provider = provider
+                                                HapticFeedbackManager.shared.selection()
+                                            }
+                                        }
+                                    }
+                                    .opacity(provider.isAvailable ? 1.0 : 0.6)
                                 }
                             }
-                            .pickerStyle(.radioGroup)
-                            .accessibilityLabel("AI Provider Selection")
-                            .onChange(of: viewModel.config.provider) { oldValue, newValue in
-                                HapticFeedbackManager.shared.selection()
-                            }
+                            .padding(.vertical, 4)
 
                             if !viewModel.config.provider.isAvailable,
                                let reason = viewModel.config.provider.unavailabilityReason {
