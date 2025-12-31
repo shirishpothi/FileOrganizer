@@ -21,16 +21,16 @@ jobs:
       - name: Show environment info
         run: |
           echo "=== Xcode Version ==="
-          xcodebuild -version
+          xcodebuild -version || true
           echo ""
           echo "=== Swift Version ==="
-          swift --version
+          swift --version || true
           echo ""
           echo "=== Available SDKs ==="
-          xcodebuild -showsdks
+          xcodebuild -showsdks || true
           echo ""
           echo "=== Project Schemes ==="
-          xcodebuild -project "FileOrganiser.xcodeproj" -list
+          xcodebuild -project "FileOrganiser.xcodeproj" -list 2>&1 || true
 
       - name: Build the project
         run: |
