@@ -15,12 +15,18 @@ jobs:
 
       - name: Show environment info
         run: |
+          echo "=== macOS Version ==="
           sw_vers
+          echo ""
+          echo "=== Xcode Version ==="
           xcodebuild -version
+          echo ""
+          echo "=== Swift Version ==="
           swift --version
 
       - name: Build the project
         run: |
+          echo "🔨 Building FileOrganiser..."
           xcodebuild build \
             -project "FileOrganiser.xcodeproj" \
             -scheme "FileOrganiser" \
@@ -29,10 +35,22 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee build_output.log
 
-          echo "✅ Build succeeded"
+          BUILD_RESULT=${PIPESTATUS[0]}
+          if [ $BUILD_RESULT -eq 0 ]; then
+            echo ""
+            echo "✅ Build succeeded"
+          else
+            echo ""
+            echo "❌ Build failed with exit code $BUILD_RESULT"
+            echo ""
+            echo "=== Build Errors ==="
+            grep -E "error:" build_output.log | head -30 || true
+            exit $BUILD_RESULT
+          fi
 
       - name: Run UI Tests
         run: |
+          echo "🧪 Running UI Tests..."
           xcodebuild test \
             -project "FileOrganiser.xcodeproj" \
             -scheme "FileOrganiser" \
@@ -42,18 +60,30 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee test_output.log
 
+          TEST_RESULT=${PIPESTATUS[0]}
+
           echo ""
           echo "=== Test Summary ==="
-          grep -E "(Test Suite|Test Case|Executed|passed|failed)" test_output.log | tail -30 || true
-          echo ""
-          echo "✅ UI Tests completed"
+          grep -E "(Test Suite|Test Case|Executed|passed|failed)" test_output.log | tail -40 || true
+
+          if [ $TEST_RESULT -eq 0 ]; then
+            echo ""
+            echo "✅ All UI Tests passed!"
+          else
+            echo ""
+            echo "❌ UI Tests failed with exit code $TEST_RESULT"
+            echo ""
+            echo "=== Test Failures ==="
+            grep -E "(failed|FAILED|error:)" test_output.log | head -30 || true
+            exit $TEST_RESULT
+          fi
         timeout-minutes: 30
 
-      - name: Upload Logs
+      - name: Upload Test Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: build-and-test-logs
+          name: test-results
           path: |
             build_output.log
             test_output.log
