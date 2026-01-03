@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: macos-26
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +19,17 @@ jobs:
           xcodebuild -version
           swift --version
 
-      - name: Build the project
+      - name: Run Unit Tests (SPM)
+        run: |
+          swift test --parallel 2>&1 | tee unit_test_output.log
+          echo "✅ Unit tests completed"
+
+      - name: Build CLI Tool
+        run: |
+          swift build --product learnings
+          echo "✅ CLI build successful"
+
+      - name: Build the app
         run: |
           xcodebuild build \
             -project "FileOrganiser.xcodeproj" \
@@ -28,7 +38,6 @@ jobs:
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO \
             2>&1 | tee build_output.log
-
           echo "✅ Build succeeded"
 
       - name: Run UI Tests
@@ -40,11 +49,11 @@ jobs:
             -only-testing:FileOrganiserUITests \
             -resultBundlePath TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO \
-            2>&1 | tee test_output.log
+            2>&1 | tee ui_test_output.log
 
           echo ""
-          echo "=== Test Summary ==="
-          grep -E "(Test Suite|Test Case|Executed|passed|failed)" test_output.log | tail -30 || true
+          echo "=== UI Test Summary ==="
+          grep -E "(Test Suite|Test Case|Executed|passed|failed)" ui_test_output.log | tail -30 || true
           echo ""
           echo "✅ UI Tests completed"
         timeout-minutes: 30
@@ -55,8 +64,9 @@ jobs:
         with:
           name: test-results
           path: |
+            unit_test_output.log
             build_output.log
-            test_output.log
+            ui_test_output.log
             TestResults.xcresult
           retention-days: 7
           if-no-files-found: ignore
