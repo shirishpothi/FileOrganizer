@@ -77,6 +77,7 @@ class ResponseParserTests: XCTestCase {
         XCTAssertEqual(plan.unorganizedFiles.count, 1)
     }
 
+
     func testParsingWithTags() throws {
         let json = """
         {
@@ -110,7 +111,7 @@ class ResponseParserTests: XCTestCase {
         XCTAssertTrue(tags.contains("Finance"))
         XCTAssertTrue(tags.contains("2024"))
     }
-}
+
 
     func testParsingWithFileRenameSuggestions() throws {
         let json = """

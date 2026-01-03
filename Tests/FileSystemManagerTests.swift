@@ -90,7 +90,7 @@ class FileSystemManagerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
         XCTAssertFalse(FileManager.default.fileExists(atPath: tempDirectory.appendingPathComponent("NewDir/to_move.txt").path))
     }
-}
+
 
     // MARK: - File Tagging Tests
     
