@@ -76,4 +76,38 @@ class ResponseParserTests: XCTestCase {
         XCTAssertEqual(plan.unorganizedDetails.first?.filename, "unknown.xyz")
         XCTAssertEqual(plan.unorganizedFiles.count, 1)
     }
+
+    func testParsingWithTags() throws {
+        let json = """
+        {
+          "folders": [
+            {
+              "name": "TaggedDocs",
+              "files": [
+                {
+                  "filename": "invoice.pdf",
+                  "tags": ["Finance", "2024"]
+                }
+              ]
+            }
+          ]
+        }
+        """
+        
+        let files = [
+            FileItem(path: "/path/invoice.pdf", name: "invoice", extension: "pdf", size: 100, isDirectory: false)
+        ]
+        
+        let plan = try ResponseParser.parseResponse(json, originalFiles: files)
+        
+        XCTAssertEqual(plan.suggestions.count, 1)
+        let suggestion = plan.suggestions.first!
+        XCTAssertEqual(suggestion.folderName, "TaggedDocs")
+        
+        // Check tags
+        let tags = suggestion.tags(for: files[0])
+        XCTAssertEqual(tags.count, 2)
+        XCTAssertTrue(tags.contains("Finance"))
+        XCTAssertTrue(tags.contains("2024"))
+    }
 }

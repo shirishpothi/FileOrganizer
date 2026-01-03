@@ -359,7 +359,7 @@ struct CompactTimelineView: View {
         )
     ]
     
-    return TimelineView(
+    TimelineView(
         entries: entries,
         directoryPath: "/Users/test/Downloads",
         onRestore: { _ in }

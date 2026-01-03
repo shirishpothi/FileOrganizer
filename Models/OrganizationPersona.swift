@@ -129,12 +129,14 @@ public enum PersonaType: String, Codable, CaseIterable, Sendable {
 @MainActor
 public class PersonaManager: ObservableObject {
     @Published public var selectedPersona: PersonaType = .general
+    @Published public var selectedCustomPersonaId: String?
     
     @Published public var customPrompts: [PersonaType: String] = [:]
     
     private let userDefaults = UserDefaults.standard
     private let storageKey = "selectedPersona"
     private let customPromptsKey = "customPersonaPrompts"
+    private let customIdKey = "selectedCustomPersonaId"
     
     public init() {
         loadPersona()
