@@ -68,12 +68,12 @@ To enable the "Organize with AI..." context menu in Finder:
 
 ## 🛠 Project Structure
 
-- `AI/`: AI client implementations (OpenAI, Apple ML).
-- `FileSystem/`: Core logic for directory scanning and file operations.
-- `Views/` & `ViewModels/`: SwiftUI interface layers.
-- `Models/`: Core data structures.
-- `Organizer/`: Business logic for organization strategies.
-- `FinderExtension/`: Integrated macOS context menu support.
+- `Sources/FileOrganizerLib/`: Core implementation including AI, FileSystem, Models, and Views.
+- `Sources/FileOrganizerApp/`: Main macOS application entry and navigation.
+- `Sources/LearningsCLI/`: Implementation of the `learnings` command-line tool.
+- `Tests/`: Unit and UI test suites organized by component.
+- `FinderExtension/`: macOS Finder context menu support.
+- `Logs/`: Directory for persistent application and operation logs.
 
 ## 📜 License
 
